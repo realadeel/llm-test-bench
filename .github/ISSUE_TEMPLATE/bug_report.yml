@@ -1,0 +1,33 @@
+name: Bug Report
+description: File a bug report to help us improve
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug and what you expected to happen
+      placeholder: Tell us what you see!
+    validations:
+      required: true
+  - type: dropdown
+    id: providers
+    attributes:
+      label: Which LLM providers are affected?
+      multiple: true
+      options:
+        - OpenAI
+        - AWS Bedrock/Claude
+        - Google Gemini
+        - All providers
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output
+      render: shell
