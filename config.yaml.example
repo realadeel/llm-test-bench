@@ -17,153 +17,153 @@ delay_between_test_cases: 2 # seconds between test cases
 
 # Test cases - define your specific tests here
 test_cases:
-  - name: "Multi-Tool Image Analysis"
-    prompt: "You are an expert analyst. Examine this image carefully and determine what type of item it is, then provide structured analysis using the most appropriate method. Choose the analysis type that best matches what you see in the image."
-    image_path: "test_images/Radioheadokcomputer.png"
+  - name: "Multi-Tool Document Analysis"
+    prompt: "You are an expert document analyst. Examine this image carefully and determine what type of document or content it contains, then choose the most appropriate analysis method. Select the analysis approach that best matches what you observe in the image."
+    image_path: "test_images/sample_document.png"
     max_tokens: 2000
     temperature: 0.7
     # Multi-tool configuration - AI chooses the best analysis method
     tools:
-      - name: "analyze_music_album"
-        description: "Use for music albums, vinyl records, CDs, and music-related items"
+      - name: "analyze_text_document"
+        description: "Use for text documents, articles, reports, and written content"
         schema:
           type: "object"
           properties:
-            item_type:
+            document_type:
               type: "string"
-              description: "Type of music item (vinyl, cd, digital, etc.)"
+              description: "Type of text document (article, report, letter, etc.)"
             title:
               type: "string"
-              description: "Album or song title"
-            artist:
-              type: "string"
-              description: "Primary artist or band name"
-            year:
-              type: "string"
-              description: "Release year or era"
-            genre:
-              type: "string"
-              description: "Musical genre"
-            label:
-              type: "string"
-              description: "Record label or publisher"
-            condition:
-              type: "string"
-              enum: ["Mint", "Near Mint", "Very Good", "Good", "Fair", "Poor", "Cannot assess"]
-              description: "Physical condition assessment"
-            confidence:
-              type: "number"
-              minimum: 0.0
-              maximum: 1.0
-              description: "Analysis confidence score"
-          required: ["item_type", "title", "artist", "confidence"]
-          
-      - name: "analyze_book"
-        description: "Use for books, magazines, publications, and printed materials"
-        schema:
-          type: "object"
-          properties:
-            item_type:
-              type: "string"
-              description: "Type of publication (book, magazine, manual, etc.)"
-            title:
-              type: "string"
-              description: "Title of the publication"
+              description: "Document title or main heading"
             author:
               type: "string"
-              description: "Author or primary creator"
-            publisher:
+              description: "Author or source if visible"
+            language:
               type: "string"
-              description: "Publishing company"
-            year:
-              type: "string"
-              description: "Publication year"
-            genre:
-              type: "string"
-              description: "Genre or category"
-            isbn:
-              type: "string"
-              description: "ISBN if visible"
-            condition:
-              type: "string"
-              enum: ["Fine", "Very Fine", "Near Fine", "Very Good", "Good", "Fair", "Poor", "Cannot assess"]
-              description: "Physical condition"
+              description: "Primary language of the document"
+            word_count_estimate:
+              type: "integer"
+              description: "Estimated number of words"
+            main_topics:
+              type: "array"
+              items:
+                type: "string"
+              description: "Key topics or themes discussed"
             confidence:
               type: "number"
               minimum: 0.0
               maximum: 1.0
               description: "Analysis confidence score"
-          required: ["item_type", "title", "author", "confidence"]
+          required: ["document_type", "title", "confidence"]
           
-      - name: "analyze_artwork"
-        description: "Use for paintings, prints, posters, and visual art"
+      - name: "analyze_visual_content"
+        description: "Use for images, diagrams, charts, infographics, and visual media"
         schema:
           type: "object"
           properties:
-            item_type:
+            content_type:
               type: "string"
-              description: "Type of artwork (painting, print, poster, etc.)"
-            title:
+              description: "Type of visual content (chart, diagram, photo, etc.)"
+            subject:
               type: "string"
-              description: "Title or subject of the artwork"
-            artist:
+              description: "Main subject or focus of the visual"
+            visual_elements:
+              type: "array"
+              items:
+                type: "string"
+              description: "Key visual elements present"
+            color_scheme:
               type: "string"
-              description: "Artist or creator name"
+              description: "Dominant colors or color scheme"
             style:
               type: "string"
-              description: "Artistic style or movement"
-            medium:
-              type: "string"
-              description: "Materials used (oil, watercolor, digital, etc.)"
-            year:
-              type: "string"
-              description: "Creation year or era"
-            condition:
-              type: "string"
-              description: "Physical condition assessment"
+              description: "Visual style (professional, artistic, technical, etc.)"
+            text_present:
+              type: "boolean"
+              description: "Whether text is visible in the image"
             confidence:
               type: "number"
               minimum: 0.0
               maximum: 1.0
               description: "Analysis confidence score"
-          required: ["item_type", "title", "artist", "confidence"]
+          required: ["content_type", "subject", "confidence"]
           
-      - name: "analyze_general_object"
-        description: "Use for any other objects, collectibles, or items not covered by other categories"
+      - name: "analyze_data_visualization"
+        description: "Use for charts, graphs, tables, and data presentations"
         schema:
           type: "object"
           properties:
-            item_type:
+            chart_type:
               type: "string"
-              description: "General category of the object"
-            name:
+              description: "Type of visualization (bar chart, line graph, table, etc.)"
+            data_theme:
               type: "string"
-              description: "Name or description of the object"
-            brand:
+              description: "What the data represents or measures"
+            axes_labels:
+              type: "array"
+              items:
+                type: "string"
+              description: "Axis labels or column headers if visible"
+            key_insights:
+              type: "array"
+              items:
+                type: "string"
+              description: "Notable trends or patterns in the data"
+            time_period:
               type: "string"
-              description: "Brand or manufacturer if applicable"
-            category:
+              description: "Time period covered by the data, if applicable"
+            data_quality:
               type: "string"
-              description: "Specific category (toy, electronic, furniture, etc.)"
-            material:
-              type: "string"
-              description: "Primary materials"
-            year:
-              type: "string"
-              description: "Manufacturing year or era"
-            condition:
-              type: "string"
-              description: "Physical condition"
+              enum: ["Clear", "Partially Clear", "Difficult to Read", "Cannot Assess"]
+              description: "Readability of the data visualization"
             confidence:
               type: "number"
               minimum: 0.0
               maximum: 1.0
               description: "Analysis confidence score"
-          required: ["item_type", "name", "category", "confidence"]
+          required: ["chart_type", "data_theme", "confidence"]
+          
+      - name: "analyze_mixed_content"
+        description: "Use for complex layouts with multiple content types (presentations, magazines, mixed media)"
+        schema:
+          type: "object"
+          properties:
+            layout_type:
+              type: "string"
+              description: "Overall layout style (presentation slide, magazine page, etc.)"
+            content_sections:
+              type: "array"
+              items:
+                type: "object"
+                properties:
+                  section_type:
+                    type: "string"
+                    description: "Type of content in this section"
+                  description:
+                    type: "string"
+                    description: "Brief description of the section"
+                required: ["section_type", "description"]
+              description: "Different content sections identified"
+            primary_purpose:
+              type: "string"
+              description: "Main purpose or goal of the content"
+            target_audience:
+              type: "string"
+              description: "Apparent intended audience"
+            design_quality:
+              type: "string"
+              enum: ["Professional", "Casual", "Academic", "Creative", "Cannot Assess"]
+              description: "Overall design and presentation quality"
+            confidence:
+              type: "number"
+              minimum: 0.0
+              maximum: 1.0
+              description: "Analysis confidence score"
+          required: ["layout_type", "primary_purpose", "confidence"]
     
   - name: "Simple Object Detection"
     prompt: "Identify and list all distinct objects you can see in this image with confidence scores."
-    image_path: "test_images/Radioheadokcomputer.png"
+    image_path: "test_images/sample_document.png"
     max_tokens: 1500
     temperature: 0.3
     # Single schema configuration - traditional structured output
@@ -200,7 +200,7 @@ test_cases:
       
   - name: "Text Extraction"
     prompt: "Extract all visible text from this image, including any partial text, labels, or writing."
-    image_path: "test_images/Radioheadokcomputer.png"
+    image_path: "test_images/sample_document.png"
     max_tokens: 1500
     temperature: 0.1
     schema:
