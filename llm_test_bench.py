@@ -183,7 +183,7 @@ class LLMTestBench:
             latency = (time.time() - start_time) * 1000
             
             return TestResult(
-                provider="bedrock_claude",
+                provider=test_case.get('provider_name', 'bedrock_claude'),
                 model=test_case['model'],
                 prompt=test_case['prompt'],
                 response=response_text,
@@ -195,7 +195,7 @@ class LLMTestBench:
         except Exception as e:
             logger.error(f"Bedrock Claude error: {str(e)}")
             return TestResult(
-                provider="bedrock_claude",
+                provider=test_case.get('provider_name', 'bedrock_claude'),
                 model=test_case['model'],
                 prompt=test_case['prompt'],
                 response="",
@@ -475,14 +475,16 @@ class LLMTestBench:
             # Create test case with provider-specific model
             test_case_copy = test_case.copy()
             test_case_copy['model'] = model
+            test_case_copy['provider_name'] = provider_name
             
-            if provider_name == 'bedrock_claude' and self.bedrock_client:
+            if provider_name.startswith('bedrock_') and self.bedrock_client:
                 result = await self._call_bedrock_claude(test_case_copy)
             elif provider_name == 'openai' and self.openai_headers:
                 result = await self._call_openai(test_case_copy)
             elif provider_name == 'gemini' and self.gemini_headers:
                 result = await self._call_gemini(test_case_copy)
             else:
+                logger.warning(f"Skipping provider '{provider_name}' - no API key configured or unsupported provider")
                 continue  # Skip if no API key
             
             results.append(result)
