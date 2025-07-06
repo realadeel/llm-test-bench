@@ -100,85 +100,277 @@ class LLMTestBench:
         }
         return mime_types.get(ext, 'image/jpeg')
 
-    async def _call_bedrock_claude(self, test_case: Dict) -> TestResult:
-        """Call Bedrock Claude API with tools for structured output"""
+    async def _call_bedrock_model(self, test_case: Dict) -> TestResult:
+        """Call Bedrock API with model-specific formatting"""
         start_time = time.time()
         
         try:
             image_b64 = self._load_image_as_base64(test_case['image_path'])
             mime_type = self._get_image_mime_type(test_case['image_path'])
+            model_id = test_case['model']
             
-            message = {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": mime_type,
-                            "data": image_b64
+            # Determine if this is a Claude model or other model
+            is_claude_model = 'anthropic' in model_id.lower() or 'claude' in model_id.lower()
+            
+            if is_claude_model:
+                # Claude format (existing code)
+                message = {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": mime_type,
+                                "data": image_b64
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": test_case['prompt']
                         }
-                    },
-                    {
-                        "type": "text",
-                        "text": test_case['prompt']
-                    }
-                ]
-            }
-            
-            body = {
-                "anthropic_version": "bedrock-2023-05-31",
-                "max_tokens": test_case.get('max_tokens', 2000),
-                "temperature": test_case.get('temperature', 0.7),
-                "messages": [message]
-            }
-            
-            # Handle multiple tools (let AI choose)
-            if 'tools' in test_case:
-                # Convert config tools to Bedrock format
-                bedrock_tools = []
-                for tool in test_case['tools']:
-                    bedrock_tools.append({
-                        "name": tool['name'],
-                        "description": tool['description'],
-                        "input_schema": tool['schema']
-                    })
-                
-                body["tools"] = bedrock_tools
-                body["tool_choice"] = {"type": "auto"}  # Let Claude choose the best tool
-            
-            # Handle single schema (legacy support)
-            elif 'schema' in test_case:
-                tool_name = test_case.get('name', 'structured_response').lower().replace(' ', '_')
-                body["tools"] = [{
-                    "name": tool_name,
-                    "description": f"Analyze and respond with structured data according to the schema for: {test_case.get('name', 'this request')}",
-                    "input_schema": test_case['schema']
-                }]
-                body["tool_choice"] = {
-                    "type": "tool",
-                    "name": tool_name
+                    ]
                 }
+                
+                body = {
+                    "anthropic_version": "bedrock-2023-05-31",
+                    "max_tokens": test_case.get('max_tokens', 2000),
+                    "temperature": test_case.get('temperature', 0.7),
+                    "messages": [message]
+                }
+                
+                # Handle multiple tools (let AI choose)
+                if 'tools' in test_case:
+                    # Convert config tools to Bedrock format
+                    bedrock_tools = []
+                    for tool in test_case['tools']:
+                        bedrock_tools.append({
+                            "name": tool['name'],
+                            "description": tool['description'],
+                            "input_schema": tool['schema']
+                        })
+                    
+                    body["tools"] = bedrock_tools
+                    body["tool_choice"] = {"type": "auto"}  # Let Claude choose the best tool
+                
+                # Handle single schema (legacy support)
+                elif 'schema' in test_case:
+                    tool_name = test_case.get('name', 'structured_response').lower().replace(' ', '_')
+                    body["tools"] = [{
+                        "name": tool_name,
+                        "description": f"Analyze and respond with structured data according to the schema for: {test_case.get('name', 'this request')}",
+                        "input_schema": test_case['schema']
+                    }]
+                    body["tool_choice"] = {
+                        "type": "tool",
+                        "name": tool_name
+                    }
             
-            response = self.bedrock_client.invoke_model(
-                modelId=test_case['model'],
-                body=json.dumps(body)
-            )
-            
-            response_body = json.loads(response['body'].read())
-            
-            # Extract response text based on response type
-            if ('schema' in test_case or 'tools' in test_case) and 'content' in response_body:
-                # Tool use response
-                for content in response_body['content']:
-                    if content['type'] == 'tool_use':
-                        response_text = json.dumps(content['input'], indent=2)
-                        break
-                else:
-                    response_text = response_body['content'][0]['text']
             else:
-                # Regular text response
-                response_text = response_body['content'][0]['text']
+                # Non-Claude models - handle different formats
+                if 'llama' in model_id.lower():
+                    # Llama 4 vision models require Converse API for images
+                    if 'image_path' in test_case:
+                        logger.info(f"Using Converse API for Llama 4 vision: {model_id}")
+                        # Use Converse API for Llama 4 vision
+                        response = self.bedrock_client.converse(
+                            modelId=model_id,
+                            messages=[
+                                {
+                                    "role": "user",
+                                    "content": [
+                                        {
+                                            "text": test_case['prompt']
+                                        },
+                                        {
+                                            "image": {
+                                                "format": mime_type.split('/')[-1],  # jpeg, png, etc
+                                                "source": {
+                                                    "bytes": base64.b64decode(image_b64)  # Converse wants raw bytes
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            inferenceConfig={
+                                "maxTokens": test_case.get('max_tokens', 2000),
+                                "temperature": test_case.get('temperature', 0.7)
+                            }
+                        )
+                    else:
+                        # Text-only Llama - use InvokeModel
+                        body = {
+                            "prompt": test_case['prompt'],
+                            "max_gen_len": test_case.get('max_tokens', 2000),
+                            "temperature": test_case.get('temperature', 0.7)
+                        }
+                        response = self.bedrock_client.invoke_model(
+                            modelId=model_id,
+                            body=json.dumps(body)
+                        )
+                
+                else:
+                    # All other models use the existing logic
+                    if 'deepseek' in model_id.lower():
+                        # DeepSeek format
+                        if 'image_path' in test_case:
+                            body = {
+                                "messages": [{
+                                    "role": "user",
+                                    "content": [
+                                        {"type": "text", "text": test_case['prompt']},
+                                        {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{image_b64}"}}
+                                    ]
+                                }],
+                                "max_tokens": test_case.get('max_tokens', 2000),
+                                "temperature": test_case.get('temperature', 0.7)
+                            }
+                        else:
+                            body = {
+                                "prompt": test_case['prompt'],
+                                "max_tokens": test_case.get('max_tokens', 2000),
+                                "temperature": test_case.get('temperature', 0.7)
+                            }
+                    
+                    elif 'pixtral' in model_id.lower():
+                        # Pixtral models use messages format
+                        if 'image_path' in test_case:
+                            body = {
+                                "messages": [{
+                                    "role": "user",
+                                    "content": [
+                                        {"type": "text", "text": test_case['prompt']},
+                                        {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{image_b64}"}}
+                                    ]
+                                }],
+                                "max_tokens": test_case.get('max_tokens', 2000),
+                                "temperature": test_case.get('temperature', 0.7)
+                            }
+                        else:
+                            body = {
+                                "prompt": test_case['prompt'],
+                                "max_tokens": test_case.get('max_tokens', 2000),
+                                "temperature": test_case.get('temperature', 0.7)
+                            }
+                    
+                    else:
+                        # Generic format
+                        if 'image_path' in test_case:
+                            body = {
+                                "messages": [{
+                                    "role": "user",
+                                    "content": [
+                                        {"type": "text", "text": test_case['prompt']},
+                                        {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{image_b64}"}}
+                                    ]
+                                }],
+                                "max_tokens": test_case.get('max_tokens', 2000),
+                                "temperature": test_case.get('temperature', 0.7)
+                            }
+                        else:
+                            body = {
+                                "prompt": test_case['prompt'],
+                                "max_tokens": test_case.get('max_tokens', 2000),
+                                "temperature": test_case.get('temperature', 0.7)
+                            }
+                
+                # For non-Llama models, make the API call here
+                if not 'llama' in model_id.lower():
+                    response = self.bedrock_client.invoke_model(
+                        modelId=model_id,
+                        body=json.dumps(body)
+                    )
+            
+            # Handle different response formats
+            if 'llama' in model_id.lower() and 'image_path' in test_case:
+                # Llama 4 uses Converse API - response is already parsed
+                response_body = response
+            else:
+                # InvokeModel API - need to parse response body
+                response_body = json.loads(response['body'].read())
+            
+            # Extract response text based on model type and response format
+            if is_claude_model:
+                if ('schema' in test_case or 'tools' in test_case) and 'content' in response_body:
+                    # Tool use response
+                    for content in response_body['content']:
+                        if content['type'] == 'tool_use':
+                            response_text = json.dumps(content['input'], indent=2)
+                            break
+                    else:
+                        response_text = response_body['content'][0]['text']
+                else:
+                    # Regular text response
+                    response_text = response_body['content'][0]['text']
+                    
+                tokens_used = response_body.get('usage', {}).get('output_tokens', 0)
+            elif 'llama' in model_id.lower() and 'image_path' in test_case:
+                # Llama 4 Converse API response format
+                if 'output' in response_body and 'message' in response_body['output']:
+                    message_content = response_body['output']['message']['content']
+                    if message_content and len(message_content) > 0:
+                        response_text = message_content[0]['text']
+                    else:
+                        response_text = "No content in Converse response"
+                    tokens_used = response_body.get('usage', {}).get('outputTokens', 0)
+                else:
+                    response_text = f"Unexpected Converse response format: {json.dumps(response_body, indent=2)}"
+                    tokens_used = 0
+            else:
+                # Non-Claude models - handle different response formats
+                response_text = ""
+                tokens_used = 0
+                
+                # Try different response field patterns
+                if 'choices' in response_body:
+                    # OpenAI/Pixtral style response
+                    if response_body['choices'] and len(response_body['choices']) > 0:
+                        choice = response_body['choices'][0]
+                        if 'message' in choice:
+                            response_text = choice['message'].get('content', str(choice))
+                        else:
+                            response_text = choice.get('text', str(choice))
+                elif 'generation' in response_body:
+                    response_text = response_body['generation']
+                elif 'generated_text' in response_body:  # Hugging Face format
+                    response_text = response_body['generated_text']
+                elif 'outputs' in response_body:
+                    if response_body['outputs'] and len(response_body['outputs']) > 0:
+                        output = response_body['outputs'][0]
+                        response_text = output.get('text', output.get('generation', output.get('generated_text', str(output))))
+                elif 'text' in response_body:
+                    response_text = response_body['text']
+                elif 'response' in response_body:
+                    response_text = response_body['response']
+                elif isinstance(response_body, list) and len(response_body) > 0:  # Sometimes HF returns array
+                    first_item = response_body[0]
+                    if isinstance(first_item, dict):
+                        response_text = first_item.get('generated_text', first_item.get('text', str(first_item)))
+                    else:
+                        response_text = str(first_item)
+                else:
+                    # Fallback - stringify the whole response to see what we got
+                    response_text = f"UNKNOWN_FORMAT: {json.dumps(response_body, indent=2)}"
+                
+                # Try to extract token usage from common patterns
+                if 'usage' in response_body:
+                    usage = response_body['usage']
+                    tokens_used = (
+                        usage.get('total_tokens', 0) or
+                        usage.get('output_tokens', 0) or
+                        usage.get('completion_tokens', 0) or
+                        0
+                    )
+                elif 'token_count' in response_body:
+                    tokens_used = response_body['token_count']
+                elif 'tokens_used' in response_body:
+                    tokens_used = response_body['tokens_used']
+                else:
+                    # For models like Pixtral, try to count tokens if we have choices
+                    if 'choices' in response_body and response_body['choices']:
+                        # Some models provide usage at the top level
+                        tokens_used = response_body.get('usage', {}).get('total_tokens', 0)
             
             latency = (time.time() - start_time) * 1000
             
@@ -189,11 +381,11 @@ class LLMTestBench:
                 response=response_text,
                 latency_ms=latency,
                 timestamp=datetime.now().isoformat(),
-                tokens_used=response_body.get('usage', {}).get('output_tokens', 0)
+                tokens_used=tokens_used
             )
             
         except Exception as e:
-            logger.error(f"Bedrock Claude error: {str(e)}")
+            logger.error(f"Bedrock error for {test_case.get('model', 'unknown')}: {str(e)}")
             return TestResult(
                 provider=test_case.get('provider_name', 'bedrock_claude'),
                 model=test_case['model'],
@@ -478,7 +670,7 @@ class LLMTestBench:
             test_case_copy['provider_name'] = provider_name
             
             if provider_name.startswith('bedrock_') and self.bedrock_client:
-                result = await self._call_bedrock_claude(test_case_copy)
+                result = await self._call_bedrock_model(test_case_copy)
             elif provider_name == 'openai' and self.openai_headers:
                 result = await self._call_openai(test_case_copy)
             elif provider_name == 'gemini' and self.gemini_headers:
