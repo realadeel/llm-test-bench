@@ -1,0 +1,70 @@
+# LLM Test Bench Configuration Example
+# Copy this to config.yaml and customize for your tests
+# API keys are loaded from .env file
+
+# Provider configurations - choose which providers to test
+providers:
+  - name: "openai"
+    model: "gpt-4-vision-preview"
+  - name: "bedrock_claude"
+    model: "anthropic.claude-3-sonnet-20240229-v1:0"
+  - name: "gemini"
+    model: "gemini-1.5-pro-vision"
+
+# Test execution settings
+delay_between_calls: 1      # seconds between API calls (rate limiting)
+delay_between_test_cases: 2 # seconds between test cases
+
+# Test cases - define your specific tests here
+test_cases:
+  - name: "Basic Image Analysis"
+    prompt: "Describe what you see in this image in detail. Include objects, people, setting, and any text visible."
+    image_path: "test_images/sample.jpg"
+    max_tokens: 2000
+    temperature: 0.7
+    
+  - name: "Structured Object Detection"
+    prompt: "Analyze this image and identify all objects with their locations and confidence scores."
+    image_path: "test_images/objects.jpg"
+    max_tokens: 3000
+    temperature: 0.3
+    # Example of structured output with JSON schema
+    schema:
+      type: "object"
+      properties:
+        objects:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+                description: "Name of the detected object"
+              confidence:
+                type: "number"
+                minimum: 0
+                maximum: 1
+                description: "Confidence score (0-1)"
+              location:
+                type: "object"
+                properties:
+                  x: {type: "number"}
+                  y: {type: "number"}
+                  width: {type: "number"}
+                  height: {type: "number"}
+        total_objects:
+          type: "integer"
+          description: "Total number of objects detected"
+      required: ["objects", "total_objects"]
+      
+  - name: "Document Processing"
+    prompt: "Extract all text and structured information from this document. Identify tables, forms, and key data points."
+    image_path: "test_images/document.png"
+    max_tokens: 4000
+    temperature: 0.1
+    
+  - name: "Creative Description"
+    prompt: "Write a creative, engaging description of this image suitable for social media or marketing. Be vivid and emotive."
+    image_path: "test_images/creative.jpg"
+    max_tokens: 1500
+    temperature: 0.9

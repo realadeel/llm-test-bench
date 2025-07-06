@@ -1,3 +1,6 @@
+# Configuration files
+config.yaml
+
 # Environment and secrets
 .env
 *.env

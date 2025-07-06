@@ -36,6 +36,18 @@ class TestResult:
 
 class LLMTestBench:
     def __init__(self, config_path: str = 'config.yaml'):
+        if not Path(config_path).exists():
+            if Path('config.yaml.example').exists():
+                print("❌ config.yaml not found!")
+                print("📋 Please copy config.yaml.example to config.yaml:")
+                print("   cp config.yaml.example config.yaml")
+                print("   # Then edit config.yaml with your test cases")
+                exit(1)
+            else:
+                print("❌ No configuration file found!")
+                print("📋 Please create config.yaml with your test configuration.")
+                exit(1)
+        
         with open(config_path, 'r') as f:
             self.config = yaml.safe_load(f)
         

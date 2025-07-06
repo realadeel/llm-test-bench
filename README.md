@@ -39,20 +39,10 @@ GEMINI_API_KEY=your_gemini_key
 
 3. **Add test images to `test_images/`**
 
-4. **Configure tests in `config.yaml`:**
-```yaml
-providers:
-  - name: "openai"
-    model: "gpt-4-vision-preview"
-  - name: "bedrock_claude"
-    model: "anthropic.claude-3-sonnet-20240229-v1:0"
-
-test_cases:
-  - name: "Image Analysis"
-    prompt: "Describe what you see in this image."
-    image_path: "test_images/sample.jpg"
-    max_tokens: 2000
-    temperature: 0.7
+4. **Configure tests:**
+```bash
+cp config.yaml.example config.yaml
+# Edit config.yaml with your test cases and image paths
 ```
 
 5. **Run tests:**

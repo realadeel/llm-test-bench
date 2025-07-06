@@ -443,7 +443,10 @@ GEMINI_API_KEY=your_gemini_key</code>
                 
                 <h3>3. Configure Tests</h3>
                 <div class="code-block">
-                    <code># config.yaml
+                    <code># Copy example config and customize
+cp config.yaml.example config.yaml
+
+# config.yaml
 providers:
   - name: "openai"
     model: "gpt-4-vision-preview"
