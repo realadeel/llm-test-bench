@@ -4,7 +4,8 @@ An open source benchmarking tool for comparing Large Language Model providers du
 
 ## ✨ Features
 
-- **Multi-Provider Support**: Compare OpenAI, AWS Bedrock, and Google Gemini
+- **Multi-Provider Support**: Compare OpenAI, AWS Bedrock (multiple models), and Google Gemini
+- **Multiple Bedrock Models**: Support for Claude, DeepSeek, Llama, and other Bedrock models
 - **Flexible Input**: Test with text prompts, images, documents, or any content type
 - **Structured Output Testing**: Compare how well each provider follows your JSON schemas
 - **Multi-Tool Testing**: Let AI choose the best analysis method from multiple options
@@ -68,9 +69,11 @@ python llm_test_bench.py
 
 ```
 🎉 Test complete!
-✅ Successful: 3
+✅ Successful: 6
 ❌ Failed: 0
 ✅ bedrock_claude: 2,081ms (179 tokens)
+✅ bedrock_sonnet_4: 1,543ms (203 tokens)
+✅ bedrock_deepseek_r1: 1,821ms (185 tokens)
 ✅ openai: 1,417ms (539 tokens)  
 ✅ gemini: 2,025ms (496 tokens)
 
@@ -151,8 +154,15 @@ llm-test-bench/
 ### Provider Settings
 ```yaml
 providers:
+  # Multiple Bedrock models supported
   - name: "bedrock_claude"
     model: "anthropic.claude-3-haiku-20240307-v1:0"
+  - name: "bedrock_sonnet_4"
+    model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
+  - name: "bedrock_deepseek_r1"
+    model: "us.deepseek.r1-v1:0"
+  - name: "bedrock_llama_4_maverick"
+    model: "meta.llama4-maverick-17b-instruct-v1:0"
   - name: "openai" 
     model: "gpt-4o-mini"
   - name: "gemini"

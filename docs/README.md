@@ -14,7 +14,8 @@ Welcome to the comprehensive documentation for LLM Test Bench!
 
 LLM Test Bench is a production-ready tool for comparing Large Language Model providers on vision tasks with structured output. It helps you:
 
-- **Compare providers**: OpenAI, AWS Bedrock/Claude, Google Gemini
+- **Compare providers**: OpenAI, AWS Bedrock (multiple models), Google Gemini
+- **Multiple Bedrock Models**: Test Claude, DeepSeek, Llama, and other Bedrock models
 - **Test structured output**: JSON schemas, multi-tool selection, function calling
 - **Measure performance**: Latency, accuracy, token usage, and cost
 - **Deploy confidently**: Production-ready for Lambda and serverless environments
@@ -56,10 +57,16 @@ python llm_test_bench.py
 Your `config.yaml` file controls which providers to test and what tests to run:
 
 ```yaml
-# Provider configurations
+# Provider configurations - supports multiple Bedrock models
 providers:
   - name: "bedrock_claude"
     model: "anthropic.claude-3-haiku-20240307-v1:0"
+  - name: "bedrock_sonnet_4"
+    model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
+  - name: "bedrock_deepseek_r1"
+    model: "us.deepseek.r1-v1:0"
+  - name: "bedrock_llama_4_maverick"
+    model: "meta.llama4-maverick-17b-instruct-v1:0"
   - name: "openai"
     model: "gpt-4o-mini"
   - name: "gemini"
@@ -166,9 +173,11 @@ test_cases:
 
 ```
 🎉 Test complete!
-✅ Successful: 3
+✅ Successful: 6
 ❌ Failed: 0
 ✅ bedrock_claude: 2,081ms (179 tokens)
+✅ bedrock_sonnet_4: 1,543ms (203 tokens)
+✅ bedrock_deepseek_r1: 1,821ms (185 tokens)
 ✅ openai: 1,417ms (539 tokens)
 ✅ gemini: 2,025ms (496 tokens)
 
@@ -196,8 +205,14 @@ test_cases:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `name` | string | Provider identifier (`openai`, `bedrock_claude`, `gemini`) |
+| `name` | string | Provider identifier - use `bedrock_*` for any Bedrock model |
 | `model` | string | Specific model to use |
+
+**Supported Provider Names:**
+- `openai` - Uses OpenAI API
+- `gemini` - Uses Google Gemini API  
+- `bedrock_*` - Any name starting with "bedrock_" uses AWS Bedrock
+  - Examples: `bedrock_claude`, `bedrock_sonnet_4`, `bedrock_deepseek_r1`
 
 ### Tool Schema
 
@@ -207,7 +222,36 @@ test_cases:
 | `description` | string | When to use this tool |
 | `schema` | object | JSON schema for output structure |
 
-## 🚀 Advanced Features
+## 🏗️ Advanced Features
+
+### Multiple Bedrock Models
+
+The test bench supports any Bedrock model by using provider names that start with `bedrock_`. This allows you to test multiple Bedrock models simultaneously:
+
+```yaml
+providers:
+  # Claude models
+  - name: "bedrock_claude_haiku"
+    model: "anthropic.claude-3-haiku-20240307-v1:0"
+  - name: "bedrock_claude_sonnet"
+    model: "anthropic.claude-3-5-sonnet-20241022-v2:0"
+  - name: "bedrock_sonnet_4"
+    model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
+  
+  # Other Bedrock models
+  - name: "bedrock_deepseek_r1"
+    model: "us.deepseek.r1-v1:0"
+  - name: "bedrock_llama_4_maverick"
+    model: "meta.llama4-maverick-17b-instruct-v1:0"
+  - name: "bedrock_llama_4_scout"
+    model: "meta.llama4-scout-17b-instruct-v1:0"
+```
+
+**How it works:**
+- Any provider name starting with `bedrock_` automatically uses the AWS Bedrock handler
+- You can use any descriptive name after `bedrock_` (e.g., `bedrock_my_custom_model`)
+- Each provider appears separately in results with its own performance metrics
+- All Bedrock models use the same authentication (AWS credentials)
 
 ### Provider-Specific Features
 
