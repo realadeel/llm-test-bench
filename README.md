@@ -1,11 +1,12 @@
 # 🚀 LLM Test Bench
 
-A production-ready benchmarking tool for comparing Large Language Model providers on vision tasks with structured output. Test OpenAI, AWS Bedrock Claude, and Google Gemini side-by-side to optimize performance, cost, and accuracy.
+An open source benchmarking tool for comparing Large Language Model providers during prompt engineering. Test OpenAI, AWS Bedrock, and Google Gemini side-by-side to optimize performance, cost, and accuracy across any content type.
 
 ## ✨ Features
 
-- **Multi-Provider Support**: Compare OpenAI GPT-4, AWS Bedrock Claude, and Google Gemini
-- **Vision + Structured Output**: Test image analysis with deterministic JSON responses
+- **Multi-Provider Support**: Compare OpenAI, AWS Bedrock, and Google Gemini
+- **Flexible Input**: Test with text prompts, images, documents, or any content type
+- **Structured Output Testing**: Compare how well each provider follows your JSON schemas
 - **Multi-Tool Testing**: Let AI choose the best analysis method from multiple options
 - **Modern API Integration**: Uses each provider's latest structured output methods:
   - OpenAI: `json_schema` and function calling
@@ -18,10 +19,10 @@ A production-ready benchmarking tool for comparing Large Language Model provider
 
 ## 🎯 Use Cases
 
-- **Content Analysis**: Test how well each provider analyzes images, documents, or media
-- **Structured Data Extraction**: Compare accuracy of extracting specific fields from images
-- **Tool Selection**: Benchmark AI's ability to choose appropriate analysis methods
-- **Cost Optimization**: Find the most cost-effective provider for your use case
+- **Prompt Engineering**: Compare how different providers handle your prompts
+- **Schema Validation**: Test which provider best follows your structured output requirements
+- **Multi-Tool Selection**: Benchmark AI's ability to choose appropriate analysis methods
+- **Cost Optimization**: Find the most cost-effective provider for your specific use case
 - **Performance Testing**: Measure latency and reliability across providers
 
 ## 🚀 Quick Start
@@ -34,15 +35,16 @@ pip install -r requirements.txt
 ```
 
 ### 2. Set Up API Keys
-Create a `.env` file:
+Copy the example environment file and add your API keys:
 ```bash
-# Required: At least one provider
-OPENAI_API_KEY=your_openai_key_here
-AWS_ACCESS_KEY_ID=your_aws_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret
-AWS_REGION=us-east-1
-GEMINI_API_KEY=your_gemini_key_here
+cp .env.example .env
+# Edit .env with your actual API keys
 ```
+
+Required keys:
+- `OPENAI_API_KEY` - Get from [OpenAI Platform](https://platform.openai.com/api-keys)
+- `AWS_ACCESS_KEY_ID` & `AWS_SECRET_ACCESS_KEY` - Get from [AWS Console](https://console.aws.amazon.com/iam/)
+- `GEMINI_API_KEY` - Get from [Google AI Studio](https://ai.google.dev/gemini-api/docs/api-key)
 
 ### 3. Configure Your Test
 Copy and customize the config:
@@ -51,10 +53,10 @@ cp config.yaml.example config.yaml
 # Edit config.yaml with your test cases
 ```
 
-### 4. Add Test Images
+### 4. Add Test Content
 ```bash
-# Add your images to test_images/
-cp your_image.jpg test_images/
+# Add your test images/documents to test_images/
+cp your_content.jpg test_images/
 ```
 
 ### 5. Run Benchmark
