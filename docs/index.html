@@ -373,49 +373,18 @@ INFO:__main__:Results saved to results/test_results_20250105_143022.json
 🎉 Test complete!
 ✅ Successful: 3
 ❌ Failed: 0
-✅ openai: 1,250ms (1,240 tokens, $0.048)
-✅ bedrock_claude: 890ms (980 tokens, $0.012)  
-✅ gemini: 1,100ms (1,150 tokens, $0.008)
+✅ bedrock_claude: 2,081ms (179 tokens)
+✅ openai: 1,417ms (539 tokens)
+✅ gemini: 2,025ms (496 tokens)
 
-Winner: 🏆 Gemini (fastest + cheapest)</pre>
+🏆 Fastest: OpenAI (1,417ms)
+💰 Most efficient: Bedrock Claude (179 tokens)
+
+📊 Results are saved to results/test_results_TIMESTAMP.json
+💡 Each test shows latency, token usage, and structured output</pre>
             </div>
             
-            <div class="comparison-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Provider</th>
-                            <th>Latency</th>
-                            <th>Cost per 1K tokens</th>
-                            <th>Accuracy Score</th>
-                            <th>Best For</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>Google Gemini</strong></td>
-                            <td>1,100ms</td>
-                            <td>$0.007</td>
-                            <td>94%</td>
-                            <td>Cost optimization</td>
-                        </tr>
-                        <tr>
-                            <td><strong>AWS Claude</strong></td>
-                            <td>890ms</td>
-                            <td>$0.012</td>
-                            <td>96%</td>
-                            <td>Speed + accuracy</td>
-                        </tr>
-                        <tr>
-                            <td><strong>OpenAI GPT-4</strong></td>
-                            <td>1,250ms</td>
-                            <td>$0.039</td>
-                            <td>98%</td>
-                            <td>Maximum accuracy</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+
         </div>
     </section>
 
