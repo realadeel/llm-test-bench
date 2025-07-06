@@ -1,21 +1,23 @@
 # 🚀 LLM Test Bench
 
-An open source benchmarking tool for comparing Large Language Model providers during prompt engineering. Test OpenAI, AWS Bedrock, and Google Gemini side-by-side to optimize performance, cost, and accuracy across any content type.
+An open source benchmarking tool for comparing Large Language Model providers during prompt engineering. Test OpenAI, AWS Bedrock, and Google Gemini side-by-side to optimize performance and accuracy across any content type.
 
 ## ✨ Features
 
 - **Multi-Provider Support**: Compare OpenAI, AWS Bedrock (multiple models), and Google Gemini
-- **Multiple Bedrock Models**: Support for Claude, DeepSeek, Llama, and other Bedrock models
+- **Vision Model Support**: Full support for Llama 4, Claude, Pixtral, GPT-4V, and Gemini vision models
 - **Flexible Input**: Test with text prompts, images, documents, or any content type
 - **Structured Output Testing**: Compare how well each provider follows your JSON schemas
 - **Multi-Tool Testing**: Let AI choose the best analysis method from multiple options
-- **Modern API Integration**: Uses each provider's latest structured output methods:
+- **Modern API Integration**: Uses each provider's optimal structured output methods:
   - OpenAI: `json_schema` and function calling
   - Claude: Tool use with structured schemas  
+  - Llama 4: Converse API with tool support for vision
+  - Pixtral: Function calling with image analysis
   - Gemini: `responseSchema` with union types
 - **Raw Response Comparison**: See authentic output formatting from each provider
 - **Production Ready**: Async operations, error handling, rate limiting
-- **Cost Tracking**: Monitor token usage and latency across providers
+- **Performance Tracking**: Monitor token usage and latency across providers
 - **Configurable**: YAML-based test configuration with environment variables
 
 ## 🎯 Use Cases
@@ -23,7 +25,7 @@ An open source benchmarking tool for comparing Large Language Model providers du
 - **Prompt Engineering**: Compare how different providers handle your prompts
 - **Schema Validation**: Test which provider best follows your structured output requirements
 - **Multi-Tool Selection**: Benchmark AI's ability to choose appropriate analysis methods
-- **Cost Optimization**: Find the most cost-effective provider for your specific use case
+- **Vision Analysis**: Compare accuracy of image understanding across models
 - **Performance Testing**: Measure latency and reliability across providers
 
 ## 🚀 Quick Start
@@ -71,14 +73,15 @@ python llm_test_bench.py
 🎉 Test complete!
 ✅ Successful: 6
 ❌ Failed: 0
-✅ bedrock_claude: 2,081ms (179 tokens)
-✅ bedrock_sonnet_4: 1,543ms (203 tokens)
-✅ bedrock_deepseek_r1: 1,821ms (185 tokens)
-✅ openai: 1,417ms (539 tokens)  
-✅ gemini: 2,025ms (496 tokens)
+✅ bedrock_llama_4_maverick: 1,329ms (74 tokens) - JSON
+✅ bedrock_llama_4_scout: 994ms (87 tokens) - JSON
+✅ bedrock_pixtral: 2,052ms (2,215 tokens) - JSON
+✅ bedrock_claude: 2,081ms (179 tokens) - JSON
+✅ openai: 1,417ms (539 tokens) - JSON
+✅ gemini: 2,025ms (496 tokens) - JSON
 
-🏆 Fastest: OpenAI (1,417ms)
-💰 Most efficient: Bedrock Claude (179 tokens)
+🏆 Fastest: Llama 4 Scout (994ms)
+📄 All models produced structured JSON output
 
 📊 Results saved to results/test_results_TIMESTAMP.json
 ```
@@ -154,15 +157,17 @@ llm-test-bench/
 ### Provider Settings
 ```yaml
 providers:
-  # Multiple Bedrock models supported
+  # Vision-capable Bedrock models
+  - name: "bedrock_llama_4_maverick"
+    model: "us.meta.llama4-maverick-17b-instruct-v1:0"
+  - name: "bedrock_llama_4_scout"
+    model: "us.meta.llama4-scout-17b-instruct-v1:0"
+  - name: "bedrock_pixtral"
+    model: "us.mistral.pixtral-large-2502-v1:0"
   - name: "bedrock_claude"
     model: "anthropic.claude-3-haiku-20240307-v1:0"
   - name: "bedrock_sonnet_4"
     model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
-  - name: "bedrock_deepseek_r1"
-    model: "us.deepseek.r1-v1:0"
-  - name: "bedrock_llama_4_maverick"
-    model: "meta.llama4-maverick-17b-instruct-v1:0"
   - name: "openai" 
     model: "gpt-4o-mini"
   - name: "gemini"
@@ -188,11 +193,11 @@ test_cases:
 
 1. **Loads Configuration**: Reads your test cases and provider settings
 2. **Processes Images**: Converts images to base64 for API calls
-3. **Calls Providers**: Makes structured requests to each configured provider
-4. **Captures Raw Responses**: Records authentic output from each API
-5. **Measures Performance**: Tracks latency, tokens, and errors
-6. **Saves Results**: Outputs detailed JSON results for analysis
-7. **Compares Providers**: Shows summary of speed, cost, and success rates
+3. **Smart API Selection**: Uses optimal API for each model (Converse for Llama 4 vision, InvokeModel for others)
+4. **Structured Requests**: Converts your tool schemas to each provider's format
+5. **Captures Raw Responses**: Records authentic JSON output from each API
+6. **Measures Performance**: Tracks latency, tokens, and success rates
+7. **Saves Results**: Outputs detailed JSON results for analysis
 
 ## 🛠️ Requirements
 

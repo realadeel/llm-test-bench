@@ -15,9 +15,9 @@ Welcome to the comprehensive documentation for LLM Test Bench!
 LLM Test Bench is a production-ready tool for comparing Large Language Model providers on vision tasks with structured output. It helps you:
 
 - **Compare providers**: OpenAI, AWS Bedrock (multiple models), Google Gemini
-- **Multiple Bedrock Models**: Test Claude, DeepSeek, Llama, and other Bedrock models
+- **Vision Model Support**: Test Llama 4, Claude, Pixtral, GPT-4V, and Gemini vision models
 - **Test structured output**: JSON schemas, multi-tool selection, function calling
-- **Measure performance**: Latency, accuracy, token usage, and cost
+- **Measure performance**: Latency, accuracy, token usage
 - **Deploy confidently**: Production-ready for Lambda and serverless environments
 
 ## 🏃‍♂️ Quick Start
@@ -57,16 +57,18 @@ python llm_test_bench.py
 Your `config.yaml` file controls which providers to test and what tests to run:
 
 ```yaml
-# Provider configurations - supports multiple Bedrock models
+# Provider configurations - supports multiple vision models
 providers:
+  - name: "bedrock_llama_4_maverick"
+    model: "us.meta.llama4-maverick-17b-instruct-v1:0"
+  - name: "bedrock_llama_4_scout"
+    model: "us.meta.llama4-scout-17b-instruct-v1:0"
+  - name: "bedrock_pixtral"
+    model: "us.mistral.pixtral-large-2502-v1:0"
   - name: "bedrock_claude"
     model: "anthropic.claude-3-haiku-20240307-v1:0"
   - name: "bedrock_sonnet_4"
     model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
-  - name: "bedrock_deepseek_r1"
-    model: "us.deepseek.r1-v1:0"
-  - name: "bedrock_llama_4_maverick"
-    model: "meta.llama4-maverick-17b-instruct-v1:0"
   - name: "openai"
     model: "gpt-4o-mini"
   - name: "gemini"
@@ -175,14 +177,15 @@ test_cases:
 🎉 Test complete!
 ✅ Successful: 6
 ❌ Failed: 0
-✅ bedrock_claude: 2,081ms (179 tokens)
-✅ bedrock_sonnet_4: 1,543ms (203 tokens)
-✅ bedrock_deepseek_r1: 1,821ms (185 tokens)
-✅ openai: 1,417ms (539 tokens)
-✅ gemini: 2,025ms (496 tokens)
+✅ bedrock_llama_4_maverick: 1,329ms (74 tokens) - JSON
+✅ bedrock_llama_4_scout: 994ms (87 tokens) - JSON
+✅ bedrock_pixtral: 2,052ms (2,215 tokens) - JSON
+✅ bedrock_claude: 2,081ms (179 tokens) - JSON
+✅ openai: 1,417ms (539 tokens) - JSON
+✅ gemini: 2,025ms (496 tokens) - JSON
 
-🏆 Fastest: OpenAI (1,417ms)
-💰 Most efficient: Bedrock Claude (179 tokens)
+🏆 Fastest: Llama 4 Scout (994ms)
+📄 All models produced structured JSON output
 
 📊 Results saved to results/test_results_TIMESTAMP.json
 ```
@@ -256,7 +259,9 @@ providers:
 ### Provider-Specific Features
 
 - **OpenAI**: Uses `json_schema` with strict mode and function calling
-- **Bedrock Claude**: Uses tool schemas with auto selection
+- **Claude**: Uses tool schemas with auto selection
+- **Llama 4**: Uses Converse API with tool support for vision tasks
+- **Pixtral**: Uses function calling with image analysis
 - **Gemini**: Uses `responseSchema` with union types for multi-tool
 
 ### Rate Limiting
