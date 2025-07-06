@@ -4,12 +4,12 @@
 
 # Provider configurations - choose which providers to test
 providers:
-  - name: "openai"
-    model: "gpt-4-vision-preview"
   - name: "bedrock_claude"
-    model: "anthropic.claude-3-sonnet-20240229-v1:0"
+    model: "anthropic.claude-3-haiku-20240307-v1:0"
+  - name: "openai"
+    model: "gpt-4.1-nano-2025-04-14"
   - name: "gemini"
-    model: "gemini-1.5-pro-vision"
+    model: "gemini-2.0-flash-lite"
 
 # Test execution settings
 delay_between_calls: 1      # seconds between API calls (rate limiting)
@@ -23,15 +23,24 @@ test_cases:
     max_tokens: 2000
     temperature: 0.7
     
-  - name: "Structured Object Detection"
-    prompt: "Analyze this image and identify all objects with their locations and confidence scores."
+  - name: "Advanced Object Detection"
+    prompt: "Analyze this image and identify all objects with precise locations, confidence scores, and detailed attributes."
     image_path: "test_images/objects.jpg"
     max_tokens: 3000
-    temperature: 0.3
-    # Example of structured output with JSON schema
+    temperature: 0.2
+    # Modern structured output - each provider uses their best method
     schema:
       type: "object"
       properties:
+        id:
+          type: "string"
+          description: "Unique identifier for this analysis"
+        title:
+          type: "string"
+          description: "Descriptive title for what was detected"
+        creator:
+          type: "string"
+          description: "The source or context of the image"
         objects:
           type: "array"
           items:
@@ -39,29 +48,106 @@ test_cases:
             properties:
               name:
                 type: "string"
-                description: "Name of the detected object"
+                description: "Object name/class"
               confidence:
                 type: "number"
-                minimum: 0
-                maximum: 1
-                description: "Confidence score (0-1)"
-              location:
+                minimum: 0.0
+                maximum: 1.0
+                description: "Detection confidence (0-1)"
+              bounding_box:
                 type: "object"
                 properties:
-                  x: {type: "number"}
-                  y: {type: "number"}
-                  width: {type: "number"}
-                  height: {type: "number"}
-        total_objects:
-          type: "integer"
-          description: "Total number of objects detected"
-      required: ["objects", "total_objects"]
+                  x: 
+                    type: "number"
+                    description: "Left edge"
+                  y: 
+                    type: "number"
+                    description: "Top edge"
+                  width: 
+                    type: "number"
+                  height: 
+                    type: "number"
+                required: ["x", "y", "width", "height"]
+                additionalProperties: false
+              attributes:
+                type: "object"
+                properties:
+                  color: 
+                    type: "string"
+                  size: 
+                    type: "string"
+                    enum: ["small", "medium", "large"]
+                  material: 
+                    type: "string"
+                additionalProperties: false
+            required: ["name", "confidence", "bounding_box"]
+            additionalProperties: false
+        scene_info:
+          type: "object"
+          properties:
+            setting: 
+              type: "string"
+            lighting: 
+              type: "string"
+            time_of_day: 
+              type: "string"
+            weather: 
+              type: "string"
+          additionalProperties: false
+        confidence:
+          type: "number"
+          minimum: 0.0
+          maximum: 1.0
+          description: "Overall analysis confidence"
+      required: ["id", "title", "creator", "objects", "confidence"]
+      additionalProperties: false
       
   - name: "Document Processing"
     prompt: "Extract all text and structured information from this document. Identify tables, forms, and key data points."
     image_path: "test_images/document.png"
     max_tokens: 4000
     temperature: 0.1
+    schema:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+          description: "Unique identifier for this analysis"
+        title:
+          type: "string"
+          description: "Document title or type"
+        creator:
+          type: "string"
+          description: "Document source or issuer"
+        document_type:
+          type: "string"
+          enum: ["invoice", "receipt", "form", "contract", "report", "other"]
+        extracted_text:
+          type: "string"
+          description: "All visible text in the document"
+        key_fields:
+          type: "object"
+          description: "Important fields extracted from the document"
+          additionalProperties: true
+        financial_info:
+          type: "object"
+          properties:
+            total_amount: 
+              type: "number"
+            currency: 
+              type: "string"
+            tax_amount: 
+              type: "number"
+            subtotal: 
+              type: "number"
+          additionalProperties: false
+        confidence:
+          type: "number"
+          minimum: 0.0
+          maximum: 1.0
+          description: "Overall extraction confidence"
+      required: ["id", "title", "creator", "document_type", "confidence"]
+      additionalProperties: false
     
   - name: "Creative Description"
     prompt: "Write a creative, engaging description of this image suitable for social media or marketing. Be vivid and emotive."

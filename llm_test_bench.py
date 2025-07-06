@@ -101,7 +101,7 @@ class LLMTestBench:
         return mime_types.get(ext, 'image/jpeg')
     
     async def _call_bedrock_claude(self, test_case: Dict) -> TestResult:
-        """Call Bedrock Claude API"""
+        """Call Bedrock Claude API with tools for structured output"""
         start_time = time.time()
         
         try:
@@ -133,13 +133,42 @@ class LLMTestBench:
                 "messages": [message]
             }
             
+            # Add tools for structured output if schema provided
+            if 'schema' in test_case:
+                tool_name = test_case.get('name', 'structured_response').lower().replace(' ', '_')
+                
+                # Tools array at root level (not wrapped in toolConfig)
+                body["tools"] = [{
+                    "name": tool_name,
+                    "description": f"Analyze and respond with structured data according to the schema for: {test_case.get('name', 'this request')}",
+                    "input_schema": test_case['schema']
+                }]
+                
+                body["tool_choice"] = {
+                    "type": "tool",
+                    "name": tool_name
+                }
+            
             response = self.bedrock_client.invoke_model(
                 modelId=test_case['model'],
                 body=json.dumps(body)
             )
             
             response_body = json.loads(response['body'].read())
-            response_text = response_body['content'][0]['text']
+            
+            # Extract response text based on response type
+            if 'schema' in test_case and 'content' in response_body:
+                # Tool use response
+                for content in response_body['content']:
+                    if content['type'] == 'tool_use':
+                        response_text = json.dumps(content['input'], indent=2)
+                        break
+                else:
+                    response_text = response_body['content'][0]['text']
+            else:
+                # Regular text response
+                response_text = response_body['content'][0]['text']
+            
             latency = (time.time() - start_time) * 1000
             
             return TestResult(
@@ -165,7 +194,7 @@ class LLMTestBench:
             )
     
     async def _call_openai(self, test_case: Dict) -> TestResult:
-        """Call OpenAI API"""
+        """Call OpenAI API with json_schema structured output"""
         start_time = time.time()
         
         try:
@@ -196,6 +225,24 @@ class LLMTestBench:
                 "max_tokens": test_case.get('max_tokens', 2000),
                 "temperature": test_case.get('temperature', 0.7)
             }
+            
+            # Use OpenAI's json_schema for structured output if schema provided
+            if 'schema' in test_case:
+                # Create OpenAI-compatible schema with ALL properties required
+                openai_schema = test_case['schema'].copy()
+                
+                # OpenAI strict mode requires ALL properties to be in required array
+                if 'properties' in openai_schema:
+                    openai_schema['required'] = list(openai_schema['properties'].keys())
+                
+                body["response_format"] = {
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": test_case.get('name', 'response').lower().replace(' ', '_'),
+                        "strict": True,
+                        "schema": openai_schema
+                    }
+                }
             
             async with aiohttp.ClientSession() as session:
                 async with session.post(
@@ -233,8 +280,36 @@ class LLMTestBench:
                 error=str(e)
             )
     
+    def _strip_unsupported_schema_fields(self, schema: Dict) -> Dict:
+        """Remove fields not supported by Gemini's responseSchema"""
+        if not isinstance(schema, dict):
+            return schema
+            
+        # Create a copy to avoid modifying the original
+        cleaned_schema = {}
+        
+        # Supported fields for Gemini (from the docs)
+        supported_fields = {
+            'type', 'format', 'description', 'nullable', 'enum', 
+            'maxItems', 'minItems', 'properties', 'required', 
+            'propertyOrdering', 'items'
+        }
+        
+        for key, value in schema.items():
+            if key in supported_fields:
+                if key == 'properties' and isinstance(value, dict):
+                    # Recursively clean nested properties
+                    cleaned_schema[key] = {k: self._strip_unsupported_schema_fields(v) for k, v in value.items()}
+                elif key == 'items' and isinstance(value, dict):
+                    # Recursively clean array items schema
+                    cleaned_schema[key] = self._strip_unsupported_schema_fields(value)
+                else:
+                    cleaned_schema[key] = value
+        
+        return cleaned_schema
+    
     async def _call_gemini(self, test_case: Dict) -> TestResult:
-        """Call Gemini API"""
+        """Call Gemini API with responseSchema for structured output"""
         start_time = time.time()
         
         try:
@@ -265,6 +340,14 @@ class LLMTestBench:
                 }
             }
             
+            # Add responseSchema for structured output if schema provided
+            if 'schema' in test_case:
+                # Clean schema to remove unsupported fields like additionalProperties
+                gemini_schema = self._strip_unsupported_schema_fields(test_case['schema'])
+                
+                body["generationConfig"]["responseMimeType"] = "application/json"
+                body["generationConfig"]["responseSchema"] = gemini_schema
+            
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{test_case['model']}:generateContent"
             params = {"key": os.getenv('GEMINI_API_KEY')}
             
@@ -280,6 +363,7 @@ class LLMTestBench:
             if 'error' in response_data:
                 raise Exception(f"Gemini API error: {response_data['error']['message']}")
             
+            # Extract response text
             response_text = response_data['candidates'][0]['content']['parts'][0]['text']
             latency = (time.time() - start_time) * 1000
             
