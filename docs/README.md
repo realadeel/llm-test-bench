@@ -226,14 +226,14 @@ delay_between_test_cases: 2 # Wait between different tests
 
 ### Results Format
 
-Results are saved as JSON with detailed metrics:
+Results are saved as JSON with detailed metrics and raw responses:
 
 ```json
 {
   "provider": "openai",
   "model": "gpt-4o-mini", 
   "prompt": "...",
-  "response": "{...}",
+  "response": "{...}",  // Raw, unmodified response from API
   "latency_ms": 1417.08,
   "timestamp": "2025-07-05T20:07:05.146788",
   "tokens_used": 539,
@@ -250,6 +250,8 @@ Results are saved as JSON with detailed metrics:
 **Image Format**: Supported formats are JPG, PNG, GIF, WebP. Ensure images are in `test_images/` directory.
 
 **Schema Errors**: Validate your JSON schemas using online tools. Remember Gemini doesn't support `additionalProperties`.
+
+**Response Formatting**: Each provider formats JSON differently - this is expected behavior. OpenAI tends toward compact JSON, while Gemini may include newlines for readability.
 
 **Rate Limiting**: Increase delay values if you hit rate limits.
 

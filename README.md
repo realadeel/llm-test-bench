@@ -9,8 +9,9 @@ A production-ready benchmarking tool for comparing Large Language Model provider
 - **Multi-Tool Testing**: Let AI choose the best analysis method from multiple options
 - **Modern API Integration**: Uses each provider's latest structured output methods:
   - OpenAI: `json_schema` and function calling
-  - Claude: Tool use with structured schemas
+  - Claude: Tool use with structured schemas  
   - Gemini: `responseSchema` with union types
+- **Raw Response Comparison**: See authentic output formatting from each provider
 - **Production Ready**: Async operations, error handling, rate limiting
 - **Cost Tracking**: Monitor token usage and latency across providers
 - **Configurable**: YAML-based test configuration with environment variables
@@ -176,9 +177,10 @@ test_cases:
 1. **Loads Configuration**: Reads your test cases and provider settings
 2. **Processes Images**: Converts images to base64 for API calls
 3. **Calls Providers**: Makes structured requests to each configured provider
-4. **Measures Performance**: Tracks latency, tokens, and errors
-5. **Saves Results**: Outputs detailed JSON results for analysis
-6. **Compares Providers**: Shows summary of speed, cost, and success rates
+4. **Captures Raw Responses**: Records authentic output from each API
+5. **Measures Performance**: Tracks latency, tokens, and errors
+6. **Saves Results**: Outputs detailed JSON results for analysis
+7. **Compares Providers**: Shows summary of speed, cost, and success rates
 
 ## 🛠️ Requirements
 
