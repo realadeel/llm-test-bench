@@ -171,32 +171,57 @@ class LLMTestBench:
                 if 'llama' in model_id.lower():
                     # Llama 4 vision models require Converse API for images
                     if 'image_path' in test_case:
-                        # Use Converse API for Llama 4 vision
-                        response = self.bedrock_client.converse(
-                            modelId=model_id,
-                            messages=[
+                        # Build Converse API request
+                        converse_messages = [{
+                            "role": "user",
+                            "content": [
+                                {"text": test_case['prompt']},
                                 {
-                                    "role": "user",
-                                    "content": [
-                                        {
-                                            "text": test_case['prompt']
-                                        },
-                                        {
-                                            "image": {
-                                                "format": mime_type.split('/')[-1],  # jpeg, png, etc
-                                                "source": {
-                                                    "bytes": base64.b64decode(image_b64)  # Converse wants raw bytes
-                                                }
-                                            }
-                                        }
-                                    ]
+                                    "image": {
+                                        "format": mime_type.split('/')[-1],
+                                        "source": {"bytes": base64.b64decode(image_b64)}
+                                    }
                                 }
-                            ],
-                            inferenceConfig={
+                            ]
+                        }]
+                        
+                        # Add tool configuration if tools are specified
+                        converse_params = {
+                            "modelId": model_id,
+                            "messages": converse_messages,
+                            "inferenceConfig": {
                                 "maxTokens": test_case.get('max_tokens', 2000),
                                 "temperature": test_case.get('temperature', 0.7)
                             }
-                        )
+                        }
+                        
+                        # Handle structured output for Converse API
+                        if 'tools' in test_case:
+                            # Convert tools to Converse API format
+                            converse_tools = []
+                            for tool in test_case['tools']:
+                                converse_tools.append({
+                                    "toolSpec": {
+                                        "name": tool['name'],
+                                        "description": tool['description'],
+                                        "inputSchema": {"json": tool['schema']}
+                                    }
+                                })
+                            converse_params["toolConfig"] = {"tools": converse_tools}
+                        elif 'schema' in test_case:
+                            # For single schema, create a tool
+                            tool_name = test_case.get('name', 'structured_response').lower().replace(' ', '_')
+                            converse_params["toolConfig"] = {
+                                "tools": [{
+                                    "toolSpec": {
+                                        "name": tool_name,
+                                        "description": f"Analyze and respond with structured data",
+                                        "inputSchema": {"json": test_case['schema']}
+                                    }
+                                }]
+                            }
+                        
+                        response = self.bedrock_client.converse(**converse_params)
                     else:
                         # Text-only Llama - use InvokeModel
                         body = {
@@ -246,6 +271,34 @@ class LLMTestBench:
                                 "max_tokens": test_case.get('max_tokens', 2000),
                                 "temperature": test_case.get('temperature', 0.7)
                             }
+                            
+                            # Add tool support for Pixtral
+                            if 'tools' in test_case:
+                                # Convert config tools to Pixtral/OpenAI function format
+                                pixtral_tools = []
+                                for tool in test_case['tools']:
+                                    pixtral_tools.append({
+                                        "type": "function",
+                                        "function": {
+                                            "name": tool['name'],
+                                            "description": tool['description'],
+                                            "parameters": tool['schema']
+                                        }
+                                    })
+                                body["tools"] = pixtral_tools
+                                body["tool_choice"] = "auto"
+                            elif 'schema' in test_case:
+                                # For single schema, use JSON mode if available
+                                tool_name = test_case.get('name', 'response').lower().replace(' ', '_')
+                                body["tools"] = [{
+                                    "type": "function",
+                                    "function": {
+                                        "name": tool_name,
+                                        "description": "Analyze and respond with structured data",
+                                        "parameters": test_case['schema']
+                                    }
+                                }]
+                                body["tool_choice"] = {"type": "function", "function": {"name": tool_name}}
                         else:
                             body = {
                                 "prompt": test_case['prompt'],
@@ -309,7 +362,12 @@ class LLMTestBench:
                 if 'output' in response_body and 'message' in response_body['output']:
                     message_content = response_body['output']['message']['content']
                     if message_content and len(message_content) > 0:
-                        response_text = message_content[0]['text']
+                        # Check if it's a tool use response
+                        if message_content[0].get('toolUse'):
+                            tool_use = message_content[0]['toolUse']
+                            response_text = json.dumps(tool_use['input'], indent=2)
+                        else:
+                            response_text = message_content[0]['text']
                     else:
                         response_text = "No content in Converse response"
                     tokens_used = response_body.get('usage', {}).get('outputTokens', 0)
@@ -327,7 +385,17 @@ class LLMTestBench:
                     if response_body['choices'] and len(response_body['choices']) > 0:
                         choice = response_body['choices'][0]
                         if 'message' in choice:
-                            response_text = choice['message'].get('content', str(choice))
+                            message = choice['message']
+                            # Check for tool calls first (structured output)
+                            if 'tool_calls' in message and message['tool_calls']:
+                                tool_call = message['tool_calls'][0]
+                                if 'function' in tool_call and 'arguments' in tool_call['function']:
+                                    response_text = tool_call['function']['arguments']
+                                else:
+                                    response_text = str(tool_call)
+                            else:
+                                # Regular message content
+                                response_text = message.get('content', str(choice))
                         else:
                             response_text = choice.get('text', str(choice))
                 elif 'generation' in response_body:
