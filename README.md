@@ -3,12 +3,12 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
-Compare LLM providers (AWS Bedrock/Claude, OpenAI GPT-4 Vision, Google Gemini) on vision tasks with structured output. Perfect for evaluating AI models for production use, Lambda deployments, and cost optimization.
+Compare LLM providers (AWS Bedrock/Claude, OpenAI GPT-4, Google Gemini) on vision tasks with structured output. Perfect for evaluating AI models for production use, Lambda deployments, and cost optimization.
 
 ## 🚀 Features
 
 - **Multi-provider support**: AWS Bedrock, OpenAI, Google Gemini
-- **Vision + structured output**: Test image analysis with JSON schemas  
+- **Modern structured output**: Uses each provider's latest JSON schema methods  
 - **Production-ready**: Async operations, error handling, rate limiting
 - **Lambda-compatible**: Designed for serverless deployment
 - **Cost tracking**: Monitor token usage and API costs
@@ -52,22 +52,39 @@ python llm_test_bench.py
 
 Results are saved to `results/test_results_TIMESTAMP.json`.
 
-## Features
+## 🎯 Modern Structured Output
 
-- **Multi-provider support**: AWS Bedrock, OpenAI, Google Gemini
-- **Vision + structured output**: Test image analysis with JSON schemas
-- **Production-ready**: Async operations, error handling, rate limiting
-- **Lambda-compatible**: Designed for serverless deployment
+Each provider uses their most advanced structured output method:
 
-## Configuration
+- **OpenAI**: `json_schema` with strict validation
+- **Claude**: Tool use with input schemas 
+- **Gemini**: `responseSchema` in generation config
 
-Edit `config.yaml` to:
-- Choose which providers/models to test
-- Define test cases with custom prompts
-- Set image paths and parameters
-- Configure structured output schemas
+Example configuration:
 
-API keys are loaded from `.env` file (never committed).
+```yaml
+test_cases:
+  - name: "Object Detection"
+    prompt: "Identify all objects in this image with locations and confidence scores."
+    image_path: "test_images/photo.jpg"
+    schema:
+      type: "object"
+      properties:
+        objects:
+          type: "array"
+          items:
+            properties:
+              name: {type: "string"}
+              confidence: {type: "number", minimum: 0.0, maximum: 1.0}
+              location:
+                type: "object"
+                properties:
+                  x: {type: "number"}
+                  y: {type: "number"}
+            required: ["name", "confidence"]
+      required: ["objects"]
+      additionalProperties: false
+```
 
 ## 📈 Example Output
 
@@ -75,44 +92,26 @@ API keys are loaded from `.env` file (never committed).
 🎉 Test complete!
 ✅ Successful: 3
 ❌ Failed: 0
-✅ openai: 1250ms (1,240 tokens, $0.048)
-✅ bedrock_claude: 890ms (980 tokens, $0.012)
-✅ gemini: 1100ms (1,150 tokens, $0.008)
+✅ openai: 1,250ms (1,240 tokens)
+✅ bedrock_claude: 890ms (980 tokens)  
+✅ gemini: 1,100ms (1,150 tokens)
 ```
 
-## 🔧 Advanced Configuration
+## 🔧 Configuration
 
-### Structured Output with JSON Schema
+Edit `config.yaml` to:
+- Choose providers and models to test
+- Define test cases with custom prompts
+- Set image paths and parameters
+- Configure JSON schemas for structured output
 
-```yaml
-test_cases:
-  - name: "Object Detection"
-    prompt: "Identify objects in this image with locations and confidence scores."
-    image_path: "test_images/sample.jpg"
-    schema:
-      type: "object"
-      properties:
-        objects:
-          type: "array"
-          items:
-            type: "object"
-            properties:
-              name: {type: "string"}
-              confidence: {type: "number"}
-              bbox: {type: "array"}
-```
+API keys are loaded from `.env` file (never committed).
 
-### Multiple Test Cases
+## 🌟 Latest Models Supported
 
-```yaml
-test_cases:
-  - name: "Document Analysis"
-    prompt: "Extract text and structure from this document."
-    image_path: "test_images/invoice.png"
-  - name: "Medical Image Analysis"  
-    prompt: "Analyze this medical scan for abnormalities."
-    image_path: "test_images/xray.jpg"
-```
+- **OpenAI**: `gpt-4.1-nano-2025-04-14`
+- **Bedrock Claude**: `anthropic.claude-3-haiku-20240307-v1:0`
+- **Gemini**: `gemini-2.0-flash-lite`
 
 ## Use Cases
 
@@ -134,7 +133,7 @@ Pull requests welcome! Please:
 
 ## 🔍 Keywords
 
-`llm-comparison` `ai-benchmark` `openai-api` `claude-api` `gemini-api` `vision-ai` `multimodal-ai` `api-testing` `cost-optimization` `lambda-deployment` `serverless-ai` `production-ai` `ai-evaluation` `model-comparison` `llm-benchmark`
+`llm-comparison` `ai-benchmark` `openai-api` `claude-api` `gemini-api` `vision-ai` `multimodal-ai` `api-testing` `cost-optimization` `lambda-deployment` `serverless-ai` `production-ai` `ai-evaluation` `model-comparison` `llm-benchmark` `structured-output` `json-schema`
 
 ---
 
