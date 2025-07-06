@@ -171,7 +171,6 @@ class LLMTestBench:
                 if 'llama' in model_id.lower():
                     # Llama 4 vision models require Converse API for images
                     if 'image_path' in test_case:
-                        logger.info(f"Using Converse API for Llama 4 vision: {model_id}")
                         # Use Converse API for Llama 4 vision
                         response = self.bedrock_client.converse(
                             modelId=model_id,
@@ -387,7 +386,7 @@ class LLMTestBench:
         except Exception as e:
             logger.error(f"Bedrock error for {test_case.get('model', 'unknown')}: {str(e)}")
             return TestResult(
-                provider=test_case.get('provider_name', 'bedrock_claude'),
+                provider=test_case.get('provider_name', 'bedrock_model'),
                 model=test_case['model'],
                 prompt=test_case['prompt'],
                 response="",
