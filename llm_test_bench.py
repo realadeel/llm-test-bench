@@ -440,6 +440,10 @@ class LLMTestBench:
                     candidate = response_data['candidates'][0]
                     response_text = candidate['content']['parts'][0]['text']
                     
+                    # Clean up any newlines/whitespace from JSON responses
+                    if 'tools' in test_case or 'schema' in test_case:
+                        response_text = response_text.strip()
+                    
                     latency = (time.time() - start_time) * 1000
                     
                     return TestResult(

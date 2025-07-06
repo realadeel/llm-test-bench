@@ -299,7 +299,7 @@
     <section class="hero">
         <div class="container">
             <h1>LLM Test Bench</h1>
-            <p>Compare AI models from OpenAI, Claude, and Gemini with production-ready benchmarking</p>
+            <p>Compare AI models from OpenAI, Claude, and Gemini with multi-tool structured output testing</p>
             <div class="cta-buttons">
                 <a href="https://github.com/realadeel/llm-test-bench" class="btn btn-primary">
                     📦 Get Started
@@ -325,8 +325,8 @@
                 
                 <div class="feature-card">
                     <div class="feature-icon">🎯</div>
-                    <h3>Modern Structured Output</h3>
-                    <p>Uses each provider's latest method: OpenAI json_schema, Claude tools, Gemini responseSchema</p>
+                    <h3>Multi-Tool Testing</h3>
+                    <p>AI examines images and chooses the best analysis method from multiple options - like choosing between vinyl record, book, or artwork analysis</p>
                 </div>
                 
                 <div class="feature-card">
@@ -415,29 +415,30 @@ GEMINI_API_KEY=your_gemini_key</code>
                     <code># Copy example config and customize
 cp config.yaml.example config.yaml
 
-# config.yaml - Latest models
-providers:
-  - name: "bedrock_claude"
-    model: "anthropic.claude-3-haiku-20240307-v1:0"
-  - name: "openai"
-    model: "gpt-4.1-nano-2025-04-14"
-  - name: "gemini"
-    model: "gemini-2.0-flash-lite"
-
+# Multi-tool testing - AI chooses best analysis method
 test_cases:
-  - name: "Object Detection"
-    prompt: "Identify objects with structured output."
-    image_path: "test_images/sample.jpg"
-    schema:
-      type: "object"
-      properties:
-        objects:
-          type: "array"
-          items:
-            properties:
-              name: {type: "string"}
-              confidence: {type: "number"}
-      required: ["objects"]</code>
+  - name: "Multi-Tool Analysis"
+    prompt: "Examine this image and choose the appropriate tool..."
+    image_path: "test_images/album.jpg"
+    tools:
+      - name: "analyze_music_album"
+        description: "For music albums and records"
+        schema:
+          type: "object"
+          properties:
+            title: {type: "string"}
+            artist: {type: "string"}
+            genre: {type: "string"}
+          required: ["title", "artist"]
+      
+      - name: "analyze_book"
+        description: "For books and publications"
+        schema:
+          type: "object"
+          properties:
+            title: {type: "string"}
+            author: {type: "string"}
+          required: ["title", "author"]</code>
                 </div>
                 
                 <h3>4. Run Tests</h3>

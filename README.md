@@ -1,72 +1,122 @@
-# LLM Test Bench - AI Model Comparison Tool
+# 🚀 LLM Test Bench
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+A production-ready benchmarking tool for comparing Large Language Model providers on vision tasks with structured output. Test OpenAI, AWS Bedrock Claude, and Google Gemini side-by-side to optimize performance, cost, and accuracy.
 
-Compare LLM providers (AWS Bedrock/Claude, OpenAI GPT-4, Google Gemini) on vision tasks with structured output. Perfect for evaluating AI models for production use, Lambda deployments, and cost optimization.
+## ✨ Features
 
-## 🚀 Features
+- **Multi-Provider Support**: Compare OpenAI GPT-4, AWS Bedrock Claude, and Google Gemini
+- **Vision + Structured Output**: Test image analysis with deterministic JSON responses
+- **Multi-Tool Testing**: Let AI choose the best analysis method from multiple options
+- **Modern API Integration**: Uses each provider's latest structured output methods:
+  - OpenAI: `json_schema` and function calling
+  - Claude: Tool use with structured schemas
+  - Gemini: `responseSchema` with union types
+- **Production Ready**: Async operations, error handling, rate limiting
+- **Cost Tracking**: Monitor token usage and latency across providers
+- **Configurable**: YAML-based test configuration with environment variables
 
-- **Multi-provider support**: AWS Bedrock, OpenAI, Google Gemini
-- **Modern structured output**: Uses each provider's latest JSON schema methods  
-- **Production-ready**: Async operations, error handling, rate limiting
-- **Lambda-compatible**: Designed for serverless deployment
-- **Cost tracking**: Monitor token usage and API costs
-- **Benchmark metrics**: Latency, accuracy, and reliability comparison
+## 🎯 Use Cases
 
-## 📊 Use Cases
+- **Content Analysis**: Test how well each provider analyzes images, documents, or media
+- **Structured Data Extraction**: Compare accuracy of extracting specific fields from images
+- **Tool Selection**: Benchmark AI's ability to choose appropriate analysis methods
+- **Cost Optimization**: Find the most cost-effective provider for your use case
+- **Performance Testing**: Measure latency and reliability across providers
 
-- **API evaluation**: Choose the best LLM provider for your use case
-- **Cost analysis**: Optimize AI spending with usage metrics
-- **A/B testing**: Compare prompts, models, and parameters
-- **Production deployment**: Production-ready for serverless applications
-- **Research**: Academic and commercial AI model evaluation
+## 🚀 Quick Start
 
-## Quick Start
-
-1. **Install dependencies:**
+### 1. Clone and Install
 ```bash
+git clone https://github.com/realadeel/llm-test-bench.git
+cd llm-test-bench
 pip install -r requirements.txt
 ```
 
-2. **Set up API keys in `.env`:**
+### 2. Set Up API Keys
+Create a `.env` file:
 ```bash
+# Required: At least one provider
+OPENAI_API_KEY=your_openai_key_here
 AWS_ACCESS_KEY_ID=your_aws_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret
-OPENAI_API_KEY=your_openai_key
-GEMINI_API_KEY=your_gemini_key
+AWS_REGION=us-east-1
+GEMINI_API_KEY=your_gemini_key_here
 ```
 
-3. **Add test images to `test_images/`**
-
-4. **Configure tests:**
+### 3. Configure Your Test
+Copy and customize the config:
 ```bash
 cp config.yaml.example config.yaml
-# Edit config.yaml with your test cases and image paths
+# Edit config.yaml with your test cases
 ```
 
-5. **Run tests:**
+### 4. Add Test Images
+```bash
+# Add your images to test_images/
+cp your_image.jpg test_images/
+```
+
+### 5. Run Benchmark
 ```bash
 python llm_test_bench.py
 ```
 
-Results are saved to `results/test_results_TIMESTAMP.json`.
+## 📊 Example Output
 
-## 🎯 Modern Structured Output
+```
+🎉 Test complete!
+✅ Successful: 3
+❌ Failed: 0
+✅ bedrock_claude: 2,081ms (179 tokens)
+✅ openai: 1,417ms (539 tokens)  
+✅ gemini: 2,025ms (496 tokens)
 
-Each provider uses their most advanced structured output method:
+🏆 Fastest: OpenAI (1,417ms)
+💰 Most efficient: Bedrock Claude (179 tokens)
 
-- **OpenAI**: `json_schema` with strict validation
-- **Claude**: Tool use with input schemas 
-- **Gemini**: `responseSchema` in generation config
+📊 Results saved to results/test_results_TIMESTAMP.json
+```
 
-Example configuration:
+## 🔧 Configuration
+
+### Multi-Tool Testing
+Let the AI choose the best analysis method:
+
+```yaml
+test_cases:
+  - name: "Multi-Tool Analysis"
+    prompt: "Analyze this image and choose the appropriate tool..."
+    image_path: "test_images/album_cover.jpg"
+    tools:
+      - name: "analyze_vinyl_record"
+        description: "For vinyl records and LPs"
+        schema:
+          type: "object"
+          properties:
+            title: {type: "string"}
+            artist: {type: "string"}
+            genre: {type: "string"}
+          required: ["title", "artist"]
+      
+      - name: "analyze_book"
+        description: "For books and publications"
+        schema:
+          type: "object"
+          properties:
+            title: {type: "string"}
+            author: {type: "string"}
+            publisher: {type: "string"}
+          required: ["title", "author"]
+```
+
+### Single Schema Testing
+Traditional structured output testing:
 
 ```yaml
 test_cases:
   - name: "Object Detection"
-    prompt: "Identify all objects in this image with locations and confidence scores."
-    image_path: "test_images/photo.jpg"
+    prompt: "List all objects in this image"
+    image_path: "test_images/scene.jpg"
     schema:
       type: "object"
       properties:
@@ -75,66 +125,85 @@ test_cases:
           items:
             properties:
               name: {type: "string"}
-              confidence: {type: "number", minimum: 0.0, maximum: 1.0}
-              location:
-                type: "object"
-                properties:
-                  x: {type: "number"}
-                  y: {type: "number"}
-            required: ["name", "confidence"]
-      required: ["objects"]
-      additionalProperties: false
+              confidence: {type: "number"}
+        total_count: {type: "integer"}
+      required: ["objects", "total_count"]
 ```
 
-## 📈 Example Output
+## 📁 Project Structure
 
 ```
-🎉 Test complete!
-✅ Successful: 3
-❌ Failed: 0
-✅ openai: 1,250ms (1,240 tokens)
-✅ bedrock_claude: 890ms (980 tokens)  
-✅ gemini: 1,100ms (1,150 tokens)
+llm-test-bench/
+├── llm_test_bench.py      # Main benchmarking engine
+├── config.yaml           # Your test configuration
+├── config.yaml.example   # Example configuration
+├── test_images/          # Your test images
+├── results/              # Benchmark results (JSON)
+├── docs/                 # Documentation website
+└── requirements.txt      # Dependencies
 ```
 
-## 🔧 Configuration
+## 🎛️ Advanced Configuration
 
-Edit `config.yaml` to:
-- Choose providers and models to test
-- Define test cases with custom prompts
-- Set image paths and parameters
-- Configure JSON schemas for structured output
+### Provider Settings
+```yaml
+providers:
+  - name: "bedrock_claude"
+    model: "anthropic.claude-3-haiku-20240307-v1:0"
+  - name: "openai" 
+    model: "gpt-4o-mini"
+  - name: "gemini"
+    model: "gemini-1.5-flash"
 
-API keys are loaded from `.env` file (never committed).
+# Rate limiting
+delay_between_calls: 1      # seconds between API calls
+delay_between_test_cases: 2 # seconds between test cases
+```
 
-## 🌟 Latest Models Supported
+### Test Parameters
+```yaml
+test_cases:
+  - name: "Custom Test"
+    prompt: "Your analysis prompt..."
+    image_path: "test_images/image.jpg"
+    max_tokens: 2000
+    temperature: 0.7
+    # ... schema or tools
+```
 
-- **OpenAI**: `gpt-4.1-nano-2025-04-14`
-- **Bedrock Claude**: `anthropic.claude-3-haiku-20240307-v1:0`
-- **Gemini**: `gemini-2.0-flash-lite`
+## 🔍 How It Works
 
-## Use Cases
+1. **Loads Configuration**: Reads your test cases and provider settings
+2. **Processes Images**: Converts images to base64 for API calls
+3. **Calls Providers**: Makes structured requests to each configured provider
+4. **Measures Performance**: Tracks latency, tokens, and errors
+5. **Saves Results**: Outputs detailed JSON results for analysis
+6. **Compares Providers**: Shows summary of speed, cost, and success rates
 
-- **API evaluation**: Compare providers for your specific use case
-- **Cost analysis**: Track token usage and latency
-- **A/B testing**: Test different prompts and parameters
-- **Lambda deployment**: Production-ready for serverless apps
+## 🛠️ Requirements
 
-## License
+- Python 3.8+
+- API keys for desired providers
+- Images in supported formats (JPG, PNG, GIF, WebP)
 
-MIT License - see [LICENSE](LICENSE) file.
+## 📝 License
 
-## Contributing
+MIT License - see [LICENSE](LICENSE) file for details.
 
-Pull requests welcome! Please:
-1. Keep it simple
-2. Add tests for new features
-3. Update documentation
+## 🤝 Contributing
 
-## 🔍 Keywords
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-`llm-comparison` `ai-benchmark` `openai-api` `claude-api` `gemini-api` `vision-ai` `multimodal-ai` `api-testing` `cost-optimization` `lambda-deployment` `serverless-ai` `production-ai` `ai-evaluation` `model-comparison` `llm-benchmark` `structured-output` `json-schema`
+## 📧 Support
+
+- 🐛 [Report Issues](https://github.com/realadeel/llm-test-bench/issues)
+- 💡 [Request Features](https://github.com/realadeel/llm-test-bench/issues)
+- 📖 [Documentation](https://realadeel.github.io/llm-test-bench/)
 
 ---
 
-**Star ⭐ this repo if it helps you choose the right AI provider!**
+**Ready to benchmark your vision AI?** Start with the [Quick Start](#-quick-start) guide above! 🚀
