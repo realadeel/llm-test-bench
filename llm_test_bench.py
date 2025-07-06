@@ -340,8 +340,44 @@ class LLMTestBench:
         
         return cleaned
 
+    def _create_union_schema_for_gemini(self, tools: List[Dict]) -> Dict:
+        """
+        Create a union schema for Gemini that includes all possible fields from all tools.
+        This allows the AI to output any combination of fields based on what it detects.
+        """
+        union_properties = {
+            "item_type": {
+                "type": "string",
+                "enum": [tool["name"] for tool in tools],
+                "description": "The type of analysis performed - which tool was conceptually used"
+            }
+        }
+        
+        all_required = ["item_type"]
+        
+        # Merge all properties from all tool schemas
+        for tool in tools:
+            schema = tool["schema"]
+            if "properties" in schema:
+                for prop_name, prop_def in schema["properties"].items():
+                    if prop_name not in union_properties:
+                        # Make all fields optional in the union except core ones
+                        union_properties[prop_name] = prop_def.copy()
+                
+                # Add required fields from this tool to the union
+                if "required" in schema:
+                    for req_field in schema["required"]:
+                        if req_field not in all_required:
+                            all_required.append(req_field)
+        
+        return {
+            "type": "object",
+            "properties": union_properties,
+            "required": all_required
+        }
+
     async def _call_gemini(self, test_case: Dict) -> TestResult:
-        """Call Gemini API with function calling for structured output"""
+        """Call Gemini API with responseSchema for structured output"""
         start_time = time.time()
         
         try:
@@ -371,22 +407,20 @@ class LLMTestBench:
                 }
             }
             
-            # Handle multiple tools (let AI choose)
+            # Handle multiple tools (use responseSchema instead of function calling)
             if 'tools' in test_case:
-                # Convert config tools to Gemini function format
-                gemini_functions = []
-                for tool in test_case['tools']:
-                    gemini_functions.append({
-                        "name": tool['name'],
-                        "description": tool['description'],
-                        "parameters": self._clean_schema_for_gemini(tool['schema'])
-                    })
-                
-                body["tools"] = [{"function_declarations": gemini_functions}]
+                # Create a union schema that includes all possible fields
+                union_schema = self._create_union_schema_for_gemini(test_case['tools'])
+                cleaned_schema = self._clean_schema_for_gemini(union_schema)
+                # CRITICAL: Must set responseMimeType to application/json for schema to work
+                body["generationConfig"]["responseMimeType"] = "application/json"
+                body["generationConfig"]["responseSchema"] = cleaned_schema
             
             # Handle single schema (legacy support)
             elif 'schema' in test_case:
-                body["generationConfig"]["response_schema"] = self._clean_schema_for_gemini(test_case['schema'])
+                # CRITICAL: Must set responseMimeType to application/json for schema to work
+                body["generationConfig"]["responseMimeType"] = "application/json"
+                body["generationConfig"]["responseSchema"] = self._clean_schema_for_gemini(test_case['schema'])
             
             api_key = os.getenv('GEMINI_API_KEY')
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{test_case['model']}:generateContent?key={api_key}"
@@ -402,16 +436,9 @@ class LLMTestBench:
                     if response.status != 200:
                         raise Exception(f"Gemini API error: {response_data}")
                     
-                    # Extract response based on type
+                    # Extract response - should be direct JSON now
                     candidate = response_data['candidates'][0]
-                    
-                    if 'tools' in test_case and 'functionCall' in candidate['content']['parts'][0]:
-                        # Function call response
-                        function_call = candidate['content']['parts'][0]['functionCall']
-                        response_text = json.dumps(function_call['args'], indent=2)
-                    else:
-                        # Regular or schema response
-                        response_text = candidate['content']['parts'][0]['text']
+                    response_text = candidate['content']['parts'][0]['text']
                     
                     latency = (time.time() - start_time) * 1000
                     
