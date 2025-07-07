@@ -1,6 +1,6 @@
 # 🚀 LLM Test Bench
 
-An open source benchmarking tool for comparing Large Language Model providers during prompt engineering. Test OpenAI, AWS Bedrock, and Google Gemini side-by-side to optimize performance and accuracy across any content type.
+An optimized benchmarking tool for comparing Large Language Model providers during prompt engineering. Test OpenAI, AWS Bedrock, and Google Gemini side-by-side to optimize performance and accuracy across any content type.
 
 ## ✨ Features
 
@@ -71,20 +71,60 @@ python llm_test_bench.py
 
 ```
 🎉 Test complete!
-✅ Successful: 6
-❌ Failed: 0
-✅ bedrock_llama_4_maverick: 1,329ms (74 tokens) - JSON
-✅ bedrock_llama_4_scout: 994ms (87 tokens) - JSON
-✅ bedrock_pixtral: 2,052ms (2,215 tokens) - JSON
-✅ bedrock_claude: 2,081ms (179 tokens) - JSON
-✅ openai: 1,417ms (539 tokens) - JSON
-✅ gemini: 2,025ms (496 tokens) - JSON
+📊 Test Cases: 1
+✅ Successful Provider Calls: 3
+❌ Failed Provider Calls: 0
 
-🏆 Fastest: Llama 4 Scout (994ms)
-📄 All models produced structured JSON output
+📝 Production-Optimized Multi-Tool Analysis:
+  ✅ bedrock_llama_4_maverick: 1101ms
+  ✅ bedrock_llama_4_scout: 1307ms  
+  ✅ bedrock_pixtral: 9240ms
 
-📊 Results saved to results/test_results_TIMESTAMP.json
+📊 Results saved to results/test_results_20250707_015405.json
 ```
+
+### Optimized JSON Structure
+
+**Efficient format eliminates prompt duplication:**
+
+```json
+[
+  {
+    "name": "Production-Optimized Multi-Tool Analysis",
+    "prompt": "You are a professional appraiser...",  // STORED ONCE
+    "image_path": "test_images/Radioheadokcomputer.png",
+    "max_tokens": 2000,
+    "temperature": 0.1,
+    "provider_results": [
+      {
+        "provider": "bedrock_llama_4_maverick",
+        "model": "us.meta.llama4-maverick-17b-instruct-v1:0",
+        "response": "{\"id\": \"VINYL_20250107_001\", \"title\": \"OK Computer\", ...}",
+        "latency_ms": 1101.5,
+        "timestamp": "2025-07-07T01:53:52.253486",
+        "error": null,
+        "tokens_used": 107
+      },
+      {
+        "provider": "bedrock_llama_4_scout", 
+        "model": "us.meta.llama4-scout-17b-instruct-v1:0",
+        "response": "{\"id\": \"VINYL_20250707_001\", \"title\": \"OK Computer\", ...}",
+        "latency_ms": 1306.8,
+        "timestamp": "2025-07-07T01:53:54.561458",
+        "error": null,
+        "tokens_used": 109
+      }
+    ],
+    "tools": [...] // Tool definitions
+  }
+]
+```
+
+**Benefits:**
+- 💾 **Smaller files** (no prompt duplication)
+- 📁 **Better organization** (grouped by test case)
+- 🔍 **Easier analysis** (test metadata at top level)
+- ⚙️ **Same data** (fully backward compatible)
 
 ## 🔧 Configuration
 
@@ -147,8 +187,9 @@ llm-test-bench/
 ├── config.yaml           # Your test configuration
 ├── config.yaml.example   # Example configuration
 ├── test_images/          # Your test images
-├── results/              # Benchmark results (JSON)
-├── docs/                 # Documentation website
+├── results/              # Benchmark results (optimized JSON format)
+├── docs/                 # Documentation
+│   └── README.md          # Comprehensive documentation
 └── requirements.txt      # Dependencies
 ```
 
@@ -191,13 +232,14 @@ test_cases:
 
 ## 🔍 How It Works
 
-1. **Loads Configuration**: Reads your test cases and provider settings
-2. **Processes Images**: Converts images to base64 for API calls
+1. **Loads Configuration**: Reads your test cases and provider settings from YAML
+2. **Processes Images**: Converts images to base64 for API calls  
 3. **Smart API Selection**: Uses optimal API for each model (Converse for Llama 4 vision, InvokeModel for others)
 4. **Structured Requests**: Converts your tool schemas to each provider's format
 5. **Captures Raw Responses**: Records authentic JSON output from each API
 6. **Measures Performance**: Tracks latency, tokens, and success rates
-7. **Saves Results**: Outputs detailed JSON results for analysis
+7. **Optimized Storage**: Groups results by test case for efficient analysis
+8. **Saves Results**: Outputs organized JSON results for comparison
 
 ## 🛠️ Requirements
 

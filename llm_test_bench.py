@@ -27,12 +27,21 @@ logger = logging.getLogger(__name__)
 class TestResult:
     provider: str
     model: str
-    prompt: str
     response: str
     latency_ms: float
     timestamp: str
     error: Optional[str] = None
     tokens_used: Optional[int] = None
+
+@dataclass
+class TestCaseResult:
+    name: str
+    prompt: str
+    image_path: Optional[str]
+    max_tokens: int
+    temperature: float
+    provider_results: List[TestResult]
+    tools: Optional[List[Dict]] = None
 
 class LLMTestBench:
     def __init__(self, config_path: str = 'config.yaml'):
@@ -444,7 +453,6 @@ class LLMTestBench:
             return TestResult(
                 provider=test_case.get('provider_name', 'bedrock_claude'),
                 model=test_case['model'],
-                prompt=test_case['prompt'],
                 response=response_text,
                 latency_ms=latency,
                 timestamp=datetime.now().isoformat(),
@@ -456,7 +464,6 @@ class LLMTestBench:
             return TestResult(
                 provider=test_case.get('provider_name', 'bedrock_model'),
                 model=test_case['model'],
-                prompt=test_case['prompt'],
                 response="",
                 latency_ms=(time.time() - start_time) * 1000,
                 timestamp=datetime.now().isoformat(),
@@ -561,7 +568,6 @@ class LLMTestBench:
                     return TestResult(
                         provider="openai",
                         model=test_case['model'],
-                        prompt=test_case['prompt'],
                         response=response_text,
                         latency_ms=latency,
                         timestamp=datetime.now().isoformat(),
@@ -573,7 +579,6 @@ class LLMTestBench:
             return TestResult(
                 provider="openai",
                 model=test_case['model'],
-                prompt=test_case['prompt'],
                 response="",
                 latency_ms=(time.time() - start_time) * 1000,
                 timestamp=datetime.now().isoformat(),
@@ -704,7 +709,6 @@ class LLMTestBench:
                     return TestResult(
                         provider="gemini",
                         model=test_case['model'],
-                        prompt=test_case['prompt'],
                         response=response_text,
                         latency_ms=latency,
                         timestamp=datetime.now().isoformat(),
@@ -716,16 +720,15 @@ class LLMTestBench:
             return TestResult(
                 provider="gemini",
                 model=test_case['model'],
-                prompt=test_case['prompt'],
                 response="",
                 latency_ms=(time.time() - start_time) * 1000,
                 timestamp=datetime.now().isoformat(),
                 error=str(e)
             )
     
-    async def run_test_case(self, test_case: Dict) -> List[TestResult]:
+    async def run_test_case(self, test_case: Dict) -> TestCaseResult:
         """Run a single test case across all configured providers"""
-        results = []
+        provider_results = []
         
         for provider_config in self.config['providers']:
             provider_name = provider_config['name']
@@ -746,32 +749,40 @@ class LLMTestBench:
                 logger.warning(f"Skipping provider '{provider_name}' - no API key configured or unsupported provider")
                 continue  # Skip if no API key
             
-            results.append(result)
+            provider_results.append(result)
             
             # Add delay between API calls
             await asyncio.sleep(self.config.get('delay_between_calls', 1))
         
-        return results
+        return TestCaseResult(
+            name=test_case.get('name', 'Unnamed Test Case'),
+            prompt=test_case['prompt'],
+            image_path=test_case.get('image_path'),
+            max_tokens=test_case.get('max_tokens', 2000),
+            temperature=test_case.get('temperature', 0.7),
+            provider_results=provider_results,
+            tools=test_case.get('tools')
+        )
     
-    async def run_all_tests(self) -> List[TestResult]:
+    async def run_all_tests(self) -> List[TestCaseResult]:
         """Run all test cases"""
-        all_results = []
+        all_test_case_results = []
         
         for i, test_case in enumerate(self.config['test_cases']):
             logger.info(f"Running test case {i+1}/{len(self.config['test_cases'])}: {test_case.get('name', 'Unnamed')}")
             
-            results = await self.run_test_case(test_case)
-            all_results.extend(results)
+            test_case_result = await self.run_test_case(test_case)
+            all_test_case_results.append(test_case_result)
             
             # Add delay between test cases
             if i < len(self.config['test_cases']) - 1:
                 await asyncio.sleep(self.config.get('delay_between_test_cases', 2))
         
-        return all_results
+        return all_test_case_results
     
-    def save_results(self, results: List[TestResult], output_file: str):
+    def save_results(self, test_case_results: List[TestCaseResult], output_file: str):
         """Save test results to JSON file"""
-        results_dict = [asdict(result) for result in results]
+        results_dict = [asdict(test_case_result) for test_case_result in test_case_results]
         
         with open(output_file, 'w') as f:
             json.dump(results_dict, f, indent=2)
@@ -781,23 +792,30 @@ class LLMTestBench:
 # Simple runner
 async def main():
     test_bench = LLMTestBench()
-    results = await test_bench.run_all_tests()
+    test_case_results = await test_bench.run_all_tests()
     
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     output_file = f'results/test_results_{timestamp}.json'
-    test_bench.save_results(results, output_file)
+    test_bench.save_results(test_case_results, output_file)
     
     # Print summary
-    successful = [r for r in results if r.error is None]
-    failed = [r for r in results if r.error is not None]
+    total_provider_results = []
+    for test_case_result in test_case_results:
+        total_provider_results.extend(test_case_result.provider_results)
+    
+    successful = [r for r in total_provider_results if r.error is None]
+    failed = [r for r in total_provider_results if r.error is not None]
     
     print(f"\n🎉 Test complete!")
-    print(f"✅ Successful: {len(successful)}")
-    print(f"❌ Failed: {len(failed)}")
+    print(f"📊 Test Cases: {len(test_case_results)}")
+    print(f"✅ Successful Provider Calls: {len(successful)}")
+    print(f"❌ Failed Provider Calls: {len(failed)}")
     
-    for result in results:
-        status = "✅" if result.error is None else "❌"
-        print(f"{status} {result.provider}: {result.latency_ms:.0f}ms")
+    for test_case_result in test_case_results:
+        print(f"\n📝 {test_case_result.name}:")
+        for result in test_case_result.provider_results:
+            status = "✅" if result.error is None else "❌"
+            print(f"  {status} {result.provider}: {result.latency_ms:.0f}ms")
 
 if __name__ == "__main__":
     asyncio.run(main())
