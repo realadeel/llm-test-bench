@@ -21,421 +21,19 @@
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
     
-    <style>
-        :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --secondary: #64748b;
-            --accent: #0ea5e9;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --surface: #f8fafc;
-            --surface-dark: #0f172a;
-            --text: #1e293b;
-            --text-light: #64748b;
-            --border: #e2e8f0;
+    <!-- Tailwind 4 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <style type="text/tailwindcss">
+        @theme {
+            --color-primary: #2563eb;
+            --color-primary-dark: #1d4ed8;
+            --color-accent: #0ea5e9;
+            --color-success: #10b981;
+            --animation-fade-in-up: fade-in-up 0.6s ease-out forwards;
         }
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-            line-height: 1.6;
-            color: var(--text);
-            background: var(--surface);
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-        
-        /* Header */
-        header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-        }
-        
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-        
-        .nav-links a {
-            color: var(--text);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-        
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-        
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(135deg, var(--surface-dark) 0%, #1e40af 100%);
-            color: white;
-            padding: 5rem 0;
-            text-align: center;
-        }
-        
-        .hero h1 {
-            font-size: clamp(2.5rem, 5vw, 4rem);
-            font-weight: 800;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .hero-subtitle {
-            font-size: 1.25rem;
-            margin-bottom: 3rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        .cta-group {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.875rem 1.5rem;
-            font-weight: 600;
-            text-decoration: none;
-            border-radius: 0.5rem;
-            transition: all 0.2s;
-            font-size: 1rem;
-        }
-        
-        .btn-primary {
-            background: white;
-            color: var(--primary);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        
-        .btn-primary:hover {
-            background: #f8fafc;
-            transform: translateY(-1px);
-            box-shadow: 0 8px 15px -1px rgba(0, 0, 0, 0.2);
-        }
-        
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-        
-        /* Features Section */
-        .features {
-            padding: 5rem 0;
-            background: white;
-        }
-        
-        .section-header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
-        
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 1rem;
-        }
-        
-        .section-subtitle {
-            font-size: 1.125rem;
-            color: var(--text-light);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 2rem;
-        }
-        
-        .feature-card {
-            background: var(--surface);
-            padding: 2rem;
-            border-radius: 1rem;
-            border: 1px solid var(--border);
-            transition: all 0.2s;
-        }
-        
-        .feature-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            border-color: var(--primary);
-        }
-        
-        .feature-icon {
-            width: 3rem;
-            height: 3rem;
-            background: var(--primary);
-            color: white;
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .feature-card h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--text);
-        }
-        
-        .feature-card p {
-            color: var(--text-light);
-            line-height: 1.6;
-        }
-        
-        /* Demo Section */
-        .demo {
-            padding: 5rem 0;
-            background: var(--surface);
-        }
-        
-        .demo-terminal {
-            background: var(--surface-dark);
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-top: 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .terminal-header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #334155;
-        }
-        
-        .terminal-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-        
-        .dot-red { background: #ef4444; }
-        .dot-yellow { background: #eab308; }
-        .dot-green { background: #22c55e; }
-        
-        .terminal-content {
-            font-family: 'Monaco', 'Menlo', 'Cascadia Code', monospace;
-            font-size: 0.875rem;
-            line-height: 1.5;
-            color: #e2e8f0;
-        }
-        
-        .terminal-prompt {
-            color: var(--success);
-        }
-        
-        .terminal-output {
-            color: #94a3b8;
-        }
-        
-        .terminal-success {
-            color: var(--success);
-        }
-        
-        .terminal-info {
-            color: var(--accent);
-        }
-        
-        /* Architecture Section */
-        .architecture {
-            padding: 5rem 0;
-            background: white;
-        }
-        
-        .arch-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-top: 3rem;
-        }
-        
-        .arch-item {
-            text-align: center;
-            padding: 1.5rem;
-            border-radius: 0.75rem;
-            background: var(--surface);
-            border: 1px solid var(--border);
-        }
-        
-        .arch-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-        
-        .arch-item h4 {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text);
-        }
-        
-        .arch-item p {
-            color: var(--text-light);
-            font-size: 0.875rem;
-        }
-        
-        /* Quick Start Section */
-        .quick-start {
-            padding: 5rem 0;
-            background: var(--surface);
-        }
-        
-        .steps-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-        
-        .step-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            border: 1px solid var(--border);
-            position: relative;
-        }
-        
-        .step-number {
-            position: absolute;
-            top: -1rem;
-            left: 2rem;
-            width: 2rem;
-            height: 2rem;
-            background: var(--primary);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-        
-        .step-card h4 {
-            margin-bottom: 1rem;
-            color: var(--text);
-            font-weight: 600;
-        }
-        
-        .code-snippet {
-            background: var(--surface-dark);
-            color: #e2e8f0;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 0.875rem;
-            margin: 1rem 0;
-            overflow-x: auto;
-        }
-        
-        /* Footer */
-        footer {
-            background: var(--surface-dark);
-            color: #94a3b8;
-            padding: 3rem 0;
-            text-align: center;
-        }
-        
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-        
-        .footer-links a {
-            color: #94a3b8;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        
-        .footer-links a:hover {
-            color: white;
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .cta-group {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .btn {
-                width: 100%;
-                max-width: 300px;
-                justify-content: center;
-            }
-            
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* Animations */
-        @keyframes fadeInUp {
+        @keyframes fade-in-up {
             from {
                 opacity: 0;
                 transform: translateY(30px);
@@ -446,260 +44,350 @@
             }
         }
         
-        .animate-in {
-            animation: fadeInUp 0.6s ease-out;
+        .animate-fade-in-up {
+            animation: var(--animation-fade-in-up);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%);
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .terminal-gradient {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         }
     </style>
 </head>
-<body>
-    <header>
-        <nav class="container">
-            <a href="#" class="logo">
-                🚀 LLM Test Bench
+<body class="font-sans text-slate-900 bg-slate-50">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 glass-effect border-b border-slate-200">
+        <nav class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="flex items-center gap-3 text-2xl font-bold text-primary">
+                <span class="text-3xl">🚀</span>
+                LLM Test Bench
             </a>
-            <ul class="nav-links">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#demo">Demo</a></li>
-                <li><a href="#architecture">Architecture</a></li>
-                <li><a href="#quick-start">Quick Start</a></li>
-                <li><a href="https://github.com/realadeel/llm-test-bench">GitHub</a></li>
-            </ul>
+            
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#features" class="text-slate-700 hover:text-primary transition-colors font-medium">Features</a>
+                <a href="#demo" class="text-slate-700 hover:text-primary transition-colors font-medium">Demo</a>
+                <a href="#architecture" class="text-slate-700 hover:text-primary transition-colors font-medium">Architecture</a>
+                <a href="#quick-start" class="text-slate-700 hover:text-primary transition-colors font-medium">Quick Start</a>
+                
+                <!-- GitHub Link with Icon -->
+                <a href="https://github.com/realadeel/llm-test-bench" 
+                   class="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0C5.374 0 0 5.373 0 12 0 17.302 3.438 21.8 8.207 23.387c.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden p-2 text-slate-600 hover:text-slate-900">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
         </nav>
     </header>
 
-    <section class="hero">
-        <div class="container">
-            <h1>LLM Test Bench</h1>
-            <p class="hero-subtitle">
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white py-20 lg:py-32">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <h1 class="text-4xl lg:text-7xl font-extrabold mb-6 gradient-text">
+                LLM Test Bench
+            </h1>
+            <p class="text-xl lg:text-2xl mb-12 opacity-90 max-w-4xl mx-auto leading-relaxed">
                 Production-ready benchmarking tool for comparing Large Language Model providers on vision tasks with advanced multi-tool testing and structured output validation.
             </p>
-            <div class="cta-group">
-                <a href="https://github.com/realadeel/llm-test-bench" class="btn btn-primary">
-                    📦 Get Started
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="https://github.com/realadeel/llm-test-bench" 
+                   class="bg-white text-primary px-8 py-4 rounded-xl font-semibold text-lg shadow-2xl hover:shadow-white/25 transition-all transform hover:scale-105 hover:-translate-y-1 flex items-center gap-3">
+                    <span class="text-2xl">📦</span>
+                    Get Started
                 </a>
-                <a href="#demo" class="btn btn-secondary">
-                    👀 See Demo
+                <a href="#demo" 
+                   class="bg-white/10 text-white px-8 py-4 rounded-xl font-semibold text-lg border-2 border-white/30 hover:bg-white/20 hover:border-white/50 transition-all flex items-center gap-3">
+                    <span class="text-2xl">👀</span>
+                    See Demo
                 </a>
             </div>
         </div>
     </section>
 
-    <section id="features" class="features">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Advanced AI Model Comparison</h2>
-                <p class="section-subtitle">
+    <!-- Features Section -->
+    <section id="features" class="py-20 lg:py-32 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
+                    Advanced AI Model Comparison
+                </h2>
+                <p class="text-xl text-slate-600 max-w-3xl mx-auto">
                     Test OpenAI, AWS Bedrock, and Google Gemini vision models with sophisticated benchmarking capabilities designed for production environments.
                 </p>
             </div>
             
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Multi-Provider Support</h3>
-                    <p>Compare OpenAI GPT-4V, AWS Bedrock (Claude, Llama 4, Pixtral), and Google Gemini vision models simultaneously with unified API handling.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="group bg-slate-50 p-8 rounded-2xl border border-slate-200 hover:border-primary hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        ⚡
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-slate-900">Multi-Provider Support</h3>
+                    <p class="text-slate-600 leading-relaxed">Compare OpenAI GPT-4V, AWS Bedrock (Claude, Llama 4, Pixtral), and Google Gemini vision models simultaneously with unified API handling.</p>
                 </div>
                 
-                <div class="feature-card">
-                    <div class="feature-icon">🎯</div>
-                    <h3>Multi-Tool Testing</h3>
-                    <p>Define multiple analysis schemas and let AI choose the most appropriate method based on image content - test true AI decision-making capabilities.</p>
+                <div class="group bg-slate-50 p-8 rounded-2xl border border-slate-200 hover:border-primary hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        🎯
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-slate-900">Multi-Tool Testing</h3>
+                    <p class="text-slate-600 leading-relaxed">Define multiple analysis schemas and let AI choose the most appropriate method based on image content - test true AI decision-making capabilities.</p>
                 </div>
                 
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3>Structured Output Validation</h3>
-                    <p>Compare how well each provider follows JSON schemas with native structured output support (OpenAI json_schema, Claude tools, Gemini responseSchema).</p>
+                <div class="group bg-slate-50 p-8 rounded-2xl border border-slate-200 hover:border-primary hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        📊
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-slate-900">Structured Output Validation</h3>
+                    <p class="text-slate-600 leading-relaxed">Compare how well each provider follows JSON schemas with native structured output support (OpenAI json_schema, Claude tools, Gemini responseSchema).</p>
                 </div>
                 
-                <div class="feature-card">
-                    <div class="feature-icon">🖼️</div>
-                    <h3>Multi-Image Processing</h3>
-                    <p>Batch process entire image directories automatically. Test prompts against multiple images without configuration changes.</p>
+                <div class="group bg-slate-50 p-8 rounded-2xl border border-slate-200 hover:border-primary hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        🖼️
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-slate-900">Multi-Image Processing</h3>
+                    <p class="text-slate-600 leading-relaxed">Batch process entire image directories automatically. Test prompts against multiple images without configuration changes.</p>
                 </div>
                 
-                <div class="feature-card">
-                    <div class="feature-icon">🚀</div>
-                    <h3>Production Ready</h3>
-                    <p>Async operations, comprehensive error handling, rate limiting, and optimized for serverless deployment with AWS Lambda compatibility.</p>
+                <div class="group bg-slate-50 p-8 rounded-2xl border border-slate-200 hover:border-primary hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        🚀
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-slate-900">Production Ready</h3>
+                    <p class="text-slate-600 leading-relaxed">Async operations, comprehensive error handling, rate limiting, and optimized for serverless deployment with AWS Lambda compatibility.</p>
                 </div>
                 
-                <div class="feature-card">
-                    <div class="feature-icon">📈</div>
-                    <h3>Performance Analytics</h3>
-                    <p>Track latency, token usage, success rates, and costs across providers to optimize your AI infrastructure decisions.</p>
+                <div class="group bg-slate-50 p-8 rounded-2xl border border-slate-200 hover:border-primary hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
+                    <div class="w-12 h-12 bg-primary text-white rounded-xl flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        📈
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-slate-900">Performance Analytics</h3>
+                    <p class="text-slate-600 leading-relaxed">Track latency, token usage, success rates, and costs across providers to optimize your AI infrastructure decisions.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="demo" class="demo">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">See It In Action</h2>
-                <p class="section-subtitle">
+    <!-- Demo Section -->
+    <section id="demo" class="py-20 lg:py-32 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
+                    See It In Action
+                </h2>
+                <p class="text-xl text-slate-600 max-w-3xl mx-auto">
                     Real benchmark results showing multi-provider comparison with detailed performance metrics and structured output validation.
                 </p>
             </div>
             
-            <div class="demo-terminal">
-                <div class="terminal-header">
-                    <div class="terminal-dot dot-red"></div>
-                    <div class="terminal-dot dot-yellow"></div>
-                    <div class="terminal-dot dot-green"></div>
-                    <span style="margin-left: 1rem; color: #64748b; font-size: 0.75rem;">llm_test_bench.py</span>
+            <div class="terminal-gradient rounded-2xl p-6 shadow-2xl max-w-5xl mx-auto">
+                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-600">
+                    <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span class="text-slate-400 text-sm ml-4">llm_test_bench.py</span>
                 </div>
-                <div class="terminal-content">
-<pre><span class="terminal-prompt">$ python llm_test_bench.py</span>
+                <div class="font-mono text-sm leading-relaxed text-slate-300">
+<pre><span class="text-success">$ python llm_test_bench.py</span>
 
-<span class="terminal-info">INFO:</span> Running test case 1/1: Smart Object Analysis
-<span class="terminal-info">INFO:</span> Expanding test case to process 3 images
-<span class="terminal-info">INFO:</span> Testing openai_gpt4_nano...
-<span class="terminal-info">INFO:</span> Testing gemini_flash_lite...
-<span class="terminal-info">INFO:</span> Testing bedrock_sonnet_4...
+<span class="text-accent">INFO:</span> Running test case 1/1: Smart Object Analysis
+<span class="text-accent">INFO:</span> Expanding test case to process 3 images
+<span class="text-accent">INFO:</span> Testing openai_gpt4_nano...
+<span class="text-accent">INFO:</span> Testing gemini_flash_lite...
+<span class="text-accent">INFO:</span> Testing bedrock_sonnet_4...
 
-<span class="terminal-success">🎉 Test complete!</span>
-<span class="terminal-output">📊 Test Cases: 1</span>
-<span class="terminal-output">🖼️ Images Processed: 3</span>
-<span class="terminal-success">✅ Successful Provider Calls: 9</span>
-<span class="terminal-output">❌ Failed Provider Calls: 0</span>
+<span class="text-success">🎉 Test complete!</span>
+<span class="text-slate-400">📊 Test Cases: 1</span>
+<span class="text-slate-400">🖼️ Images Processed: 3</span>
+<span class="text-success">✅ Successful Provider Calls: 9</span>
+<span class="text-slate-400">❌ Failed Provider Calls: 0</span>
 
-<span class="terminal-output">📝 Smart Object Analysis (3 images):</span>
-<span class="terminal-output">  📸 image1:</span>
-<span class="terminal-success">    ✅ openai_gpt4_nano: 1,101ms (107 tokens)</span>
-<span class="terminal-success">    ✅ gemini_flash_lite: 987ms (134 tokens)</span>
-<span class="terminal-success">    ✅ bedrock_sonnet_4: 2,145ms (89 tokens)</span>
-<span class="terminal-output">  📸 image2:</span>
-<span class="terminal-success">    ✅ openai_gpt4_nano: 923ms (142 tokens)</span>
-<span class="terminal-success">    ✅ gemini_flash_lite: 876ms (156 tokens)</span>
-<span class="terminal-success">    ✅ bedrock_sonnet_4: 1,987ms (98 tokens)</span>
-<span class="terminal-output">  📸 image3:</span>
-<span class="terminal-success">    ✅ openai_gpt4_nano: 1,045ms (128 tokens)</span>
-<span class="terminal-success">    ✅ gemini_flash_lite: 934ms (167 tokens)</span>
-<span class="terminal-success">    ✅ bedrock_sonnet_4: 2,234ms (102 tokens)</span>
+<span class="text-slate-400">📝 Smart Object Analysis (3 images):</span>
+<span class="text-slate-400">  📸 image1:</span>
+<span class="text-success">    ✅ openai_gpt4_nano: 1,101ms (107 tokens)</span>
+<span class="text-success">    ✅ gemini_flash_lite: 987ms (134 tokens)</span>
+<span class="text-success">    ✅ bedrock_sonnet_4: 2,145ms (89 tokens)</span>
+<span class="text-slate-400">  📸 image2:</span>
+<span class="text-success">    ✅ openai_gpt4_nano: 923ms (142 tokens)</span>
+<span class="text-success">    ✅ gemini_flash_lite: 876ms (156 tokens)</span>
+<span class="text-success">    ✅ bedrock_sonnet_4: 1,987ms (98 tokens)</span>
+<span class="text-slate-400">  📸 image3:</span>
+<span class="text-success">    ✅ openai_gpt4_nano: 1,045ms (128 tokens)</span>
+<span class="text-success">    ✅ gemini_flash_lite: 934ms (167 tokens)</span>
+<span class="text-success">    ✅ bedrock_sonnet_4: 2,234ms (102 tokens)</span>
 
-<span class="terminal-info">📊 Results saved to results/test_results_2025-07-07_14-30-22.json</span>
-<span class="terminal-output">🏆 Fastest: Gemini Flash Lite (avg 932ms)</span>
-<span class="terminal-output">💰 Most Token Efficient: Bedrock Sonnet 4 (avg 96 tokens)</span></pre>
+<span class="text-accent">📊 Results saved to results/test_results_2025-07-07_14-30-22.json</span>
+<span class="text-slate-400">🏆 Fastest: Gemini Flash Lite (avg 932ms)</span>
+<span class="text-slate-400">💰 Most Token Efficient: Bedrock Sonnet 4 (avg 96 tokens)</span></pre>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="architecture" class="architecture">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Technical Architecture</h2>
-                <p class="section-subtitle">
+    <!-- Architecture Section -->
+    <section id="architecture" class="py-20 lg:py-32 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
+                    Technical Architecture
+                </h2>
+                <p class="text-xl text-slate-600 max-w-3xl mx-auto">
                     Built with modern async patterns and provider-specific optimizations for maximum performance and reliability.
                 </p>
             </div>
             
-            <div class="arch-grid">
-                <div class="arch-item">
-                    <div class="arch-icon">🔧</div>
-                    <h4>Smart API Selection</h4>
-                    <p>Uses optimal API for each model (Converse for Llama 4 vision, InvokeModel for others)</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="text-center p-6 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary transition-colors">
+                    <div class="text-4xl mb-4">🔧</div>
+                    <h4 class="font-semibold mb-2 text-slate-900">Smart API Selection</h4>
+                    <p class="text-slate-600 text-sm">Uses optimal API for each model (Converse for Llama 4 vision, InvokeModel for others)</p>
                 </div>
                 
-                <div class="arch-item">
-                    <div class="arch-icon">📝</div>
-                    <h4>Native Structured Output</h4>
-                    <p>Provider-specific implementations: OpenAI json_schema, Claude tools, Gemini responseSchema</p>
+                <div class="text-center p-6 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary transition-colors">
+                    <div class="text-4xl mb-4">📝</div>
+                    <h4 class="font-semibold mb-2 text-slate-900">Native Structured Output</h4>
+                    <p class="text-slate-600 text-sm">Provider-specific implementations: OpenAI json_schema, Claude tools, Gemini responseSchema</p>
                 </div>
                 
-                <div class="arch-item">
-                    <div class="arch-icon">⚡</div>
-                    <h4>Async Operations</h4>
-                    <p>Non-blocking API calls with comprehensive error handling and retry logic</p>
+                <div class="text-center p-6 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary transition-colors">
+                    <div class="text-4xl mb-4">⚡</div>
+                    <h4 class="font-semibold mb-2 text-slate-900">Async Operations</h4>
+                    <p class="text-slate-600 text-sm">Non-blocking API calls with comprehensive error handling and retry logic</p>
                 </div>
                 
-                <div class="arch-item">
-                    <div class="arch-icon">🛡️</div>
-                    <h4>Rate Limiting</h4>
-                    <p>Configurable delays and request throttling to respect API limits</p>
+                <div class="text-center p-6 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary transition-colors">
+                    <div class="text-4xl mb-4">🛡️</div>
+                    <h4 class="font-semibold mb-2 text-slate-900">Rate Limiting</h4>
+                    <p class="text-slate-600 text-sm">Configurable delays and request throttling to respect API limits</p>
                 </div>
                 
-                <div class="arch-item">
-                    <div class="arch-icon">📊</div>
-                    <h4>Optimized Storage</h4>
-                    <p>Efficient JSON format grouping results by test case for easy analysis</p>
+                <div class="text-center p-6 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary transition-colors">
+                    <div class="text-4xl mb-4">📊</div>
+                    <h4 class="font-semibold mb-2 text-slate-900">Optimized Storage</h4>
+                    <p class="text-slate-600 text-sm">Efficient JSON format grouping results by test case for easy analysis</p>
                 </div>
                 
-                <div class="arch-item">
-                    <div class="arch-icon">☁️</div>
-                    <h4>Serverless Ready</h4>
-                    <p>Environment variable configuration and Lambda-compatible architecture</p>
+                <div class="text-center p-6 bg-slate-50 rounded-xl border border-slate-200 hover:border-primary transition-colors">
+                    <div class="text-4xl mb-4">☁️</div>
+                    <h4 class="font-semibold mb-2 text-slate-900">Serverless Ready</h4>
+                    <p class="text-slate-600 text-sm">Environment variable configuration and Lambda-compatible architecture</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <section id="quick-start" class="quick-start">
-        <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Get Started in Minutes</h2>
-                <p class="section-subtitle">
+    <!-- Quick Start Section -->
+    <section id="quick-start" class="py-20 lg:py-32 bg-slate-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
+                    Get Started in Minutes
+                </h2>
+                <p class="text-xl text-slate-600 max-w-3xl mx-auto">
                     Simple setup process to start benchmarking AI models with advanced structured output testing.
                 </p>
             </div>
             
-            <div class="steps-grid">
-                <div class="step-card">
-                    <div class="step-number">1</div>
-                    <h4>Clone & Install</h4>
-                    <p>Get the repository and install dependencies:</p>
-                    <div class="code-snippet">git clone https://github.com/realadeel/llm-test-bench.git
-cd llm-test-bench
-pip install -r requirements.txt</div>
+            <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 relative shadow-lg">
+                    <div class="absolute -top-4 left-8 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                        1
+                    </div>
+                    <h4 class="text-xl font-semibold mb-4 text-slate-900">Clone & Install</h4>
+                    <p class="text-slate-600 mb-4">Get the repository and install dependencies:</p>
+                    <div class="bg-slate-900 text-slate-300 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+git clone https://github.com/realadeel/llm-test-bench.git<br/>
+cd llm-test-bench<br/>
+pip install -r requirements.txt
+                    </div>
                 </div>
                 
-                <div class="step-card">
-                    <div class="step-number">2</div>
-                    <h4>Configure API Keys</h4>
-                    <p>Set up your provider credentials in .env:</p>
-                    <div class="code-snippet">OPENAI_API_KEY=your_key_here
-AWS_ACCESS_KEY_ID=your_aws_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret
-GEMINI_API_KEY=your_gemini_key</div>
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 relative shadow-lg">
+                    <div class="absolute -top-4 left-8 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                        2
+                    </div>
+                    <h4 class="text-xl font-semibold mb-4 text-slate-900">Configure API Keys</h4>
+                    <p class="text-slate-600 mb-4">Set up your provider credentials in .env:</p>
+                    <div class="bg-slate-900 text-slate-300 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+OPENAI_API_KEY=your_key_here<br/>
+AWS_ACCESS_KEY_ID=your_aws_key<br/>
+AWS_SECRET_ACCESS_KEY=your_aws_secret<br/>
+GEMINI_API_KEY=your_gemini_key
+                    </div>
                 </div>
                 
-                <div class="step-card">
-                    <div class="step-number">3</div>
-                    <h4>Configure Tests</h4>
-                    <p>Customize your test configuration:</p>
-                    <div class="code-snippet">cp config.yaml.example config.yaml
-# Edit config.yaml with your test cases
-# Add images to test_images/ directory</div>
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 relative shadow-lg">
+                    <div class="absolute -top-4 left-8 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                        3
+                    </div>
+                    <h4 class="text-xl font-semibold mb-4 text-slate-900">Configure Tests</h4>
+                    <p class="text-slate-600 mb-4">Customize your test configuration:</p>
+                    <div class="bg-slate-900 text-slate-300 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+cp config.yaml.example config.yaml<br/>
+# Edit config.yaml with your test cases<br/>
+# Add images to test_images/ directory
+                    </div>
                 </div>
                 
-                <div class="step-card">
-                    <div class="step-number">4</div>
-                    <h4>Run Benchmarks</h4>
-                    <p>Execute tests and analyze results:</p>
-                    <div class="code-snippet">python llm_test_bench.py
-# Results saved to results/ directory
-# View detailed JSON output and metrics</div>
+                <div class="bg-white p-8 rounded-2xl border border-slate-200 relative shadow-lg">
+                    <div class="absolute -top-4 left-8 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                        4
+                    </div>
+                    <h4 class="text-xl font-semibold mb-4 text-slate-900">Run Benchmarks</h4>
+                    <p class="text-slate-600 mb-4">Execute tests and analyze results:</p>
+                    <div class="bg-slate-900 text-slate-300 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+python llm_test_bench.py<br/>
+# Results saved to results/ directory<br/>
+# View detailed JSON output and metrics
+                    </div>
                 </div>
             </div>
             
-            <div style="text-align: center; margin-top: 3rem;">
-                <a href="https://github.com/realadeel/llm-test-bench" class="btn btn-primary">
-                    🚀 Start Benchmarking Now
+            <div class="text-center mt-12">
+                <a href="https://github.com/realadeel/llm-test-bench" 
+                   class="inline-flex items-center gap-3 bg-primary text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105 hover:-translate-y-1">
+                    <span class="text-2xl">🚀</span>
+                    Start Benchmarking Now
                 </a>
             </div>
         </div>
     </section>
 
-    <footer>
-        <div class="container">
-            <div class="footer-links">
-                <a href="https://github.com/realadeel/llm-test-bench">GitHub Repository</a>
-                <a href="https://github.com/realadeel/llm-test-bench/issues">Report Issues</a>
-                <a href="https://github.com/realadeel/llm-test-bench/blob/main/LICENSE">MIT License</a>
-                <a href="https://github.com/realadeel/llm-test-bench#-contributing">Contributing</a>
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-16">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-wrap justify-center gap-8 mb-8">
+                <a href="https://github.com/realadeel/llm-test-bench" class="hover:text-white transition-colors">GitHub Repository</a>
+                <a href="https://github.com/realadeel/llm-test-bench/issues" class="hover:text-white transition-colors">Report Issues</a>
+                <a href="https://github.com/realadeel/llm-test-bench/blob/main/LICENSE" class="hover:text-white transition-colors">MIT License</a>
+                <a href="https://github.com/realadeel/llm-test-bench#-contributing" class="hover:text-white transition-colors">Contributing</a>
             </div>
-            <p>&copy; 2025 LLM Test Bench. Open source benchmarking tool for the AI community.</p>
+            <p class="text-center text-slate-500">
+                &copy; 2025 LLM Test Bench. Open source benchmarking tool for the AI community.
+            </p>
         </div>
     </footer>
 
@@ -727,25 +415,14 @@ GEMINI_API_KEY=your_gemini_key</div>
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-in');
+                    entry.target.classList.add('animate-fade-in-up');
                 }
             });
         }, observerOptions);
         
         // Observe feature cards and step cards
-        document.querySelectorAll('.feature-card, .step-card, .arch-item').forEach(el => {
+        document.querySelectorAll('[class*="group"], .bg-white').forEach(el => {
             observer.observe(el);
-        });
-        
-        // Add hover effects to feature cards
-        document.querySelectorAll('.feature-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-8px)';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(-4px)';
-            });
         });
     </script>
 </body>
