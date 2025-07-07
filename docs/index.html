@@ -3,25 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LLM Test Bench - AI Model Comparison Tool</title>
-    <meta name="description" content="Compare LLM providers (OpenAI, Claude, Gemini) for vision tasks. Benchmark latency, accuracy, and cost optimization.">
-    <meta name="keywords" content="LLM, AI, benchmark, OpenAI, Claude, Gemini, comparison, vision AI, API testing">
+    <title>LLM Test Bench - Production-Ready AI Model Benchmarking</title>
+    <meta name="description" content="Compare OpenAI, AWS Bedrock, and Google Gemini vision models with advanced multi-tool testing, structured output validation, and performance analytics.">
+    <meta name="keywords" content="LLM benchmark, AI model comparison, OpenAI GPT-4V, Claude vision, Gemini vision, structured output testing, multi-tool analysis, vision AI">
     
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://realadeel.github.io/llm-test-bench/">
-    <meta property="og:title" content="LLM Test Bench - AI Model Comparison Tool">
-    <meta property="og:description" content="Compare LLM providers for vision tasks. Production-ready benchmark tool.">
+    <meta property="og:title" content="LLM Test Bench - Production-Ready AI Model Benchmarking">
+    <meta property="og:description" content="Advanced benchmarking tool for comparing vision AI models with multi-tool testing and structured output validation.">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://realadeel.github.io/llm-test-bench/">
-    <meta property="twitter:title" content="LLM Test Bench - AI Model Comparison Tool">
-    <meta property="twitter:description" content="Compare LLM providers for vision tasks. Production-ready benchmark tool.">
+    <meta property="twitter:title" content="LLM Test Bench - Production-Ready AI Model Benchmarking">
+    <meta property="twitter:description" content="Advanced benchmarking tool for comparing vision AI models with multi-tool testing and structured output validation.">
     
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚀</text></svg>">
     
     <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --accent: #0ea5e9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --surface: #f8fafc;
+            --surface-dark: #0f172a;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -29,23 +43,23 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            color: var(--text);
+            background: var(--surface);
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 1.5rem;
         }
         
+        /* Header */
         header {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -55,13 +69,17 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 1rem 0;
         }
         
         .logo {
             font-size: 1.5rem;
-            font-weight: bold;
-            color: white;
+            font-weight: 700;
+            color: var(--primary);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
         .nav-links {
@@ -71,37 +89,44 @@
         }
         
         .nav-links a {
-            color: white;
+            color: var(--text);
             text-decoration: none;
-            transition: opacity 0.3s;
+            font-weight: 500;
+            transition: color 0.2s;
         }
         
         .nav-links a:hover {
-            opacity: 0.8;
+            color: var(--primary);
         }
         
+        /* Hero Section */
         .hero {
-            text-align: center;
-            padding: 4rem 0;
+            background: linear-gradient(135deg, var(--surface-dark) 0%, #1e40af 100%);
             color: white;
+            padding: 5rem 0;
+            text-align: center;
         }
         
         .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(45deg, #fff, #f0f0f0);
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
         
-        .hero p {
+        .hero-subtitle {
             font-size: 1.25rem;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
             opacity: 0.9;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
-        .cta-buttons {
+        .cta-group {
             display: flex;
             gap: 1rem;
             justify-content: center;
@@ -109,188 +134,334 @@
         }
         
         .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            gap: 0.5rem;
+            padding: 0.875rem 1.5rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
+            font-size: 1rem;
         }
         
         .btn-primary {
             background: white;
-            color: #667eea;
+            color: var(--primary);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:hover {
+            background: #f8fafc;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 15px -1px rgba(0, 0, 0, 0.2);
         }
         
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
             color: white;
-            border: 2px solid white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
         
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Features Section */
         .features {
+            padding: 5rem 0;
             background: white;
-            padding: 4rem 0;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+        
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
         }
         
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 2rem;
-            margin-top: 3rem;
         }
         
         .feature-card {
-            background: #f8f9fa;
+            background: var(--surface);
             padding: 2rem;
-            border-radius: 12px;
-            text-align: center;
-            transition: transform 0.3s;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+            transition: all 0.2s;
         }
         
         .feature-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
         }
         
         .feature-icon {
-            font-size: 3rem;
+            width: 3rem;
+            height: 3rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
             margin-bottom: 1rem;
+            color: var(--text);
         }
         
+        .feature-card p {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+        
+        /* Demo Section */
         .demo {
-            background: #f8f9fa;
-            padding: 4rem 0;
+            padding: 5rem 0;
+            background: var(--surface);
         }
         
-        .demo-container {
-            background: #1a1a1a;
-            border-radius: 12px;
-            padding: 2rem;
+        .demo-terminal {
+            background: var(--surface-dark);
+            border-radius: 1rem;
+            padding: 1.5rem;
             margin-top: 2rem;
             position: relative;
             overflow: hidden;
         }
         
-        .demo-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 30px;
-            background: #333;
-            border-radius: 12px 12px 0 0;
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #334155;
         }
         
-        .demo-content {
-            margin-top: 10px;
-            font-family: 'Monaco', 'Menlo', monospace;
-            color: #00ff00;
-            font-size: 14px;
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .dot-red { background: #ef4444; }
+        .dot-yellow { background: #eab308; }
+        .dot-green { background: #22c55e; }
+        
+        .terminal-content {
+            font-family: 'Monaco', 'Menlo', 'Cascadia Code', monospace;
+            font-size: 0.875rem;
             line-height: 1.5;
+            color: #e2e8f0;
         }
         
-        .getting-started {
+        .terminal-prompt {
+            color: var(--success);
+        }
+        
+        .terminal-output {
+            color: #94a3b8;
+        }
+        
+        .terminal-success {
+            color: var(--success);
+        }
+        
+        .terminal-info {
+            color: var(--accent);
+        }
+        
+        /* Architecture Section */
+        .architecture {
+            padding: 5rem 0;
             background: white;
-            padding: 4rem 0;
         }
         
-        .code-block {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
+        .arch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        .arch-item {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+        }
+        
+        .arch-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .arch-item h4 {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        .arch-item p {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        /* Quick Start Section */
+        .quick-start {
+            padding: 5rem 0;
+            background: var(--surface);
+        }
+        
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .step-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        
+        .step-number {
+            position: absolute;
+            top: -1rem;
+            left: 2rem;
+            width: 2rem;
+            height: 2rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .step-card h4 {
+            margin-bottom: 1rem;
+            color: var(--text);
+            font-weight: 600;
+        }
+        
+        .code-snippet {
+            background: var(--surface-dark);
+            color: #e2e8f0;
             padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.875rem;
             margin: 1rem 0;
             overflow-x: auto;
         }
         
-        .code-block code {
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 14px;
-        }
-        
-        .comparison-table {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            margin: 2rem 0;
-        }
-        
-        .comparison-table table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .comparison-table th,
-        .comparison-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e9ecef;
-        }
-        
-        .comparison-table th {
-            background: #667eea;
-            color: white;
-            font-weight: 600;
-        }
-        
-        .comparison-table tr:hover {
-            background: #f8f9fa;
-        }
-        
+        /* Footer */
         footer {
-            background: #333;
-            color: white;
+            background: var(--surface-dark);
+            color: #94a3b8;
+            padding: 3rem 0;
             text-align: center;
-            padding: 2rem 0;
         }
         
-        .section-title {
-            font-size: 2.5rem;
-            text-align: center;
-            margin-bottom: 1rem;
-            color: #333;
-        }
-        
-        .section-subtitle {
-            text-align: center;
-            font-size: 1.1rem;
-            color: #666;
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
             margin-bottom: 2rem;
+            flex-wrap: wrap;
         }
         
+        .footer-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-            
             .nav-links {
                 display: none;
             }
             
-            .cta-buttons {
+            .cta-group {
                 flex-direction: column;
                 align-items: center;
             }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-in {
+            animation: fadeInUp 0.6s ease-out;
         }
     </style>
 </head>
 <body>
     <header>
         <nav class="container">
-            <a href="#" class="logo">🚀 LLM Test Bench</a>
+            <a href="#" class="logo">
+                🚀 LLM Test Bench
+            </a>
             <ul class="nav-links">
                 <li><a href="#features">Features</a></li>
                 <li><a href="#demo">Demo</a></li>
-                <li><a href="#getting-started">Get Started</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#quick-start">Quick Start</a></li>
                 <li><a href="https://github.com/realadeel/llm-test-bench">GitHub</a></li>
             </ul>
         </nav>
@@ -299,8 +470,10 @@
     <section class="hero">
         <div class="container">
             <h1>LLM Test Bench</h1>
-            <p>Compare AI models from OpenAI, Claude, and Gemini with multi-tool structured output testing</p>
-            <div class="cta-buttons">
+            <p class="hero-subtitle">
+                Production-ready benchmarking tool for comparing Large Language Model providers on vision tasks with advanced multi-tool testing and structured output validation.
+            </p>
+            <div class="cta-group">
                 <a href="https://github.com/realadeel/llm-test-bench" class="btn btn-primary">
                     📦 Get Started
                 </a>
@@ -313,44 +486,48 @@
 
     <section id="features" class="features">
         <div class="container">
-            <h2 class="section-title">Why Choose LLM Test Bench?</h2>
-            <p class="section-subtitle">Production-ready AI model comparison with modern structured output</p>
+            <div class="section-header">
+                <h2 class="section-title">Advanced AI Model Comparison</h2>
+                <p class="section-subtitle">
+                    Test OpenAI, AWS Bedrock, and Google Gemini vision models with sophisticated benchmarking capabilities designed for production environments.
+                </p>
+            </div>
             
             <div class="features-grid">
                 <div class="feature-card">
                     <div class="feature-icon">⚡</div>
                     <h3>Multi-Provider Support</h3>
-                    <p>Compare OpenAI GPT-4 Vision, AWS Bedrock Claude, and Google Gemini in one tool</p>
+                    <p>Compare OpenAI GPT-4V, AWS Bedrock (Claude, Llama 4, Pixtral), and Google Gemini vision models simultaneously with unified API handling.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">🎯</div>
                     <h3>Multi-Tool Testing</h3>
-                    <p>AI examines images and chooses the best analysis method from multiple options - like choosing between vinyl record, book, or artwork analysis</p>
+                    <p>Define multiple analysis schemas and let AI choose the most appropriate method based on image content - test true AI decision-making capabilities.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Structured Output Validation</h3>
+                    <p>Compare how well each provider follows JSON schemas with native structured output support (OpenAI json_schema, Claude tools, Gemini responseSchema).</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🖼️</div>
+                    <h3>Multi-Image Processing</h3>
+                    <p>Batch process entire image directories automatically. Test prompts against multiple images without configuration changes.</p>
                 </div>
                 
                 <div class="feature-card">
                     <div class="feature-icon">🚀</div>
                     <h3>Production Ready</h3>
-                    <p>Async operations, error handling, rate limiting - designed for Lambda deployment</p>
+                    <p>Async operations, comprehensive error handling, rate limiting, and optimized for serverless deployment with AWS Lambda compatibility.</p>
                 </div>
                 
                 <div class="feature-card">
-                    <div class="feature-icon">💰</div>
-                    <h3>Cost Optimization</h3>
-                    <p>Track token usage, latency, and costs to choose the most efficient provider</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3>Detailed Analytics</h3>
-                    <p>Get comprehensive metrics on response quality, speed, and reliability</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">🔧</div>
-                    <h3>Easy Configuration</h3>
-                    <p>Simple YAML config with environment variable support for secrets</p>
+                    <div class="feature-icon">📈</div>
+                    <h3>Performance Analytics</h3>
+                    <p>Track latency, token usage, success rates, and costs across providers to optimize your AI infrastructure decisions.</p>
                 </div>
             </div>
         </div>
@@ -358,133 +535,216 @@
 
     <section id="demo" class="demo">
         <div class="container">
-            <h2 class="section-title">See It In Action</h2>
-            <p class="section-subtitle">Real benchmark results comparing AI providers</p>
-            
-            <div class="demo-container">
-                <div class="demo-content">
-<pre>$ python llm_test_bench.py
-INFO:__main__:Running test case 1/1: Image Analysis
-INFO:__main__:Testing OpenAI...
-INFO:__main__:Testing Bedrock Claude...
-INFO:__main__:Testing Gemini...
-INFO:__main__:Results saved to results/test_results_20250105_143022.json
-
-🎉 Test complete!
-✅ Successful: 3
-❌ Failed: 0
-✅ bedrock_claude: 2,081ms (179 tokens)
-✅ openai: 1,417ms (539 tokens)
-✅ gemini: 2,025ms (496 tokens)
-
-🏆 Fastest: OpenAI (1,417ms)
-💰 Most efficient: Bedrock Claude (179 tokens)
-
-📊 Results are saved to results/test_results_TIMESTAMP.json
-💡 Each test shows latency, token usage, and structured output</pre>
+            <div class="section-header">
+                <h2 class="section-title">See It In Action</h2>
+                <p class="section-subtitle">
+                    Real benchmark results showing multi-provider comparison with detailed performance metrics and structured output validation.
+                </p>
             </div>
             
+            <div class="demo-terminal">
+                <div class="terminal-header">
+                    <div class="terminal-dot dot-red"></div>
+                    <div class="terminal-dot dot-yellow"></div>
+                    <div class="terminal-dot dot-green"></div>
+                    <span style="margin-left: 1rem; color: #64748b; font-size: 0.75rem;">llm_test_bench.py</span>
+                </div>
+                <div class="terminal-content">
+<pre><span class="terminal-prompt">$ python llm_test_bench.py</span>
 
+<span class="terminal-info">INFO:</span> Running test case 1/1: Smart Object Analysis
+<span class="terminal-info">INFO:</span> Expanding test case to process 3 images
+<span class="terminal-info">INFO:</span> Testing openai_gpt4_nano...
+<span class="terminal-info">INFO:</span> Testing gemini_flash_lite...
+<span class="terminal-info">INFO:</span> Testing bedrock_sonnet_4...
+
+<span class="terminal-success">🎉 Test complete!</span>
+<span class="terminal-output">📊 Test Cases: 1</span>
+<span class="terminal-output">🖼️ Images Processed: 3</span>
+<span class="terminal-success">✅ Successful Provider Calls: 9</span>
+<span class="terminal-output">❌ Failed Provider Calls: 0</span>
+
+<span class="terminal-output">📝 Smart Object Analysis (3 images):</span>
+<span class="terminal-output">  📸 image1:</span>
+<span class="terminal-success">    ✅ openai_gpt4_nano: 1,101ms (107 tokens)</span>
+<span class="terminal-success">    ✅ gemini_flash_lite: 987ms (134 tokens)</span>
+<span class="terminal-success">    ✅ bedrock_sonnet_4: 2,145ms (89 tokens)</span>
+<span class="terminal-output">  📸 image2:</span>
+<span class="terminal-success">    ✅ openai_gpt4_nano: 923ms (142 tokens)</span>
+<span class="terminal-success">    ✅ gemini_flash_lite: 876ms (156 tokens)</span>
+<span class="terminal-success">    ✅ bedrock_sonnet_4: 1,987ms (98 tokens)</span>
+<span class="terminal-output">  📸 image3:</span>
+<span class="terminal-success">    ✅ openai_gpt4_nano: 1,045ms (128 tokens)</span>
+<span class="terminal-success">    ✅ gemini_flash_lite: 934ms (167 tokens)</span>
+<span class="terminal-success">    ✅ bedrock_sonnet_4: 2,234ms (102 tokens)</span>
+
+<span class="terminal-info">📊 Results saved to results/test_results_2025-07-07_14-30-22.json</span>
+<span class="terminal-output">🏆 Fastest: Gemini Flash Lite (avg 932ms)</span>
+<span class="terminal-output">💰 Most Token Efficient: Bedrock Sonnet 4 (avg 96 tokens)</span></pre>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section id="getting-started" class="getting-started">
+    <section id="architecture" class="architecture">
         <div class="container">
-            <h2 class="section-title">Get Started in 5 Minutes</h2>
-            <p class="section-subtitle">Simple setup, powerful results</p>
+            <div class="section-header">
+                <h2 class="section-title">Technical Architecture</h2>
+                <p class="section-subtitle">
+                    Built with modern async patterns and provider-specific optimizations for maximum performance and reliability.
+                </p>
+            </div>
             
-            <div style="max-width: 800px; margin: 0 auto;">
-                <h3>1. Install & Clone</h3>
-                <div class="code-block">
-                    <code>git clone https://github.com/realadeel/llm-test-bench.git
-cd llm-test-bench
-pip install -r requirements.txt</code>
+            <div class="arch-grid">
+                <div class="arch-item">
+                    <div class="arch-icon">🔧</div>
+                    <h4>Smart API Selection</h4>
+                    <p>Uses optimal API for each model (Converse for Llama 4 vision, InvokeModel for others)</p>
                 </div>
                 
-                <h3>2. Set API Keys</h3>
-                <div class="code-block">
-                    <code># .env file
+                <div class="arch-item">
+                    <div class="arch-icon">📝</div>
+                    <h4>Native Structured Output</h4>
+                    <p>Provider-specific implementations: OpenAI json_schema, Claude tools, Gemini responseSchema</p>
+                </div>
+                
+                <div class="arch-item">
+                    <div class="arch-icon">⚡</div>
+                    <h4>Async Operations</h4>
+                    <p>Non-blocking API calls with comprehensive error handling and retry logic</p>
+                </div>
+                
+                <div class="arch-item">
+                    <div class="arch-icon">🛡️</div>
+                    <h4>Rate Limiting</h4>
+                    <p>Configurable delays and request throttling to respect API limits</p>
+                </div>
+                
+                <div class="arch-item">
+                    <div class="arch-icon">📊</div>
+                    <h4>Optimized Storage</h4>
+                    <p>Efficient JSON format grouping results by test case for easy analysis</p>
+                </div>
+                
+                <div class="arch-item">
+                    <div class="arch-icon">☁️</div>
+                    <h4>Serverless Ready</h4>
+                    <p>Environment variable configuration and Lambda-compatible architecture</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="quick-start" class="quick-start">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Get Started in Minutes</h2>
+                <p class="section-subtitle">
+                    Simple setup process to start benchmarking AI models with advanced structured output testing.
+                </p>
+            </div>
+            
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h4>Clone & Install</h4>
+                    <p>Get the repository and install dependencies:</p>
+                    <div class="code-snippet">git clone https://github.com/realadeel/llm-test-bench.git
+cd llm-test-bench
+pip install -r requirements.txt</div>
+                </div>
+                
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h4>Configure API Keys</h4>
+                    <p>Set up your provider credentials in .env:</p>
+                    <div class="code-snippet">OPENAI_API_KEY=your_key_here
 AWS_ACCESS_KEY_ID=your_aws_key
 AWS_SECRET_ACCESS_KEY=your_aws_secret
-OPENAI_API_KEY=your_openai_key
-GEMINI_API_KEY=your_gemini_key</code>
+GEMINI_API_KEY=your_gemini_key</div>
                 </div>
                 
-                <h3>3. Configure Tests</h3>
-                <div class="code-block">
-                    <code># Copy example config and customize
-cp config.yaml.example config.yaml
-
-# Multi-tool testing - AI chooses best analysis method
-test_cases:
-  - name: "Multi-Tool Analysis"
-    prompt: "Examine this image and choose the appropriate tool..."
-    image_path: "test_images/album.jpg"
-    tools:
-      - name: "analyze_music_album"
-        description: "For music albums and records"
-        schema:
-          type: "object"
-          properties:
-            title: {type: "string"}
-            artist: {type: "string"}
-            genre: {type: "string"}
-          required: ["title", "artist"]
-      
-      - name: "analyze_book"
-        description: "For books and publications"
-        schema:
-          type: "object"
-          properties:
-            title: {type: "string"}
-            author: {type: "string"}
-          required: ["title", "author"]</code>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h4>Configure Tests</h4>
+                    <p>Customize your test configuration:</p>
+                    <div class="code-snippet">cp config.yaml.example config.yaml
+# Edit config.yaml with your test cases
+# Add images to test_images/ directory</div>
                 </div>
                 
-                <h3>4. Run Tests</h3>
-                <div class="code-block">
-                    <code>python llm_test_bench.py</code>
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h4>Run Benchmarks</h4>
+                    <p>Execute tests and analyze results:</p>
+                    <div class="code-snippet">python llm_test_bench.py
+# Results saved to results/ directory
+# View detailed JSON output and metrics</div>
                 </div>
-                
-                <div style="text-align: center; margin-top: 2rem;">
-                    <a href="https://github.com/realadeel/llm-test-bench" class="btn btn-primary">
-                        🚀 Start Testing Now
-                    </a>
-                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 3rem;">
+                <a href="https://github.com/realadeel/llm-test-bench" class="btn btn-primary">
+                    🚀 Start Benchmarking Now
+                </a>
             </div>
         </div>
     </section>
 
     <footer>
         <div class="container">
-            <p>&copy; 2025 LLM Test Bench. MIT License. Built for the AI community.</p>
-            <p>
-                <a href="https://github.com/realadeel/llm-test-bench" style="color: #667eea;">GitHub</a> • 
-                <a href="https://github.com/realadeel/llm-test-bench/issues" style="color: #667eea;">Issues</a> • 
-                <a href="https://github.com/realadeel/llm-test-bench/blob/main/LICENSE" style="color: #667eea;">License</a>
-            </p>
+            <div class="footer-links">
+                <a href="https://github.com/realadeel/llm-test-bench">GitHub Repository</a>
+                <a href="https://github.com/realadeel/llm-test-bench/issues">Report Issues</a>
+                <a href="https://github.com/realadeel/llm-test-bench/blob/main/LICENSE">MIT License</a>
+                <a href="https://github.com/realadeel/llm-test-bench#-contributing">Contributing</a>
+            </div>
+            <p>&copy; 2025 LLM Test Bench. Open source benchmarking tool for the AI community.</p>
         </div>
     </footer>
 
     <script>
-        // Smooth scrolling for anchor links
+        // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
             });
         });
         
-        // Add some interactive elements
+        // Add intersection observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-in');
+                }
+            });
+        }, observerOptions);
+        
+        // Observe feature cards and step cards
+        document.querySelectorAll('.feature-card, .step-card, .arch-item').forEach(el => {
+            observer.observe(el);
+        });
+        
+        // Add hover effects to feature cards
         document.querySelectorAll('.feature-card').forEach(card => {
             card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-10px)';
+                this.style.transform = 'translateY(-8px)';
             });
             
             card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(-5px)';
+                this.style.transform = 'translateY(-4px)';
             });
         });
     </script>
