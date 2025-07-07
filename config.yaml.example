@@ -1,0 +1,238 @@
+# LLM Test Bench Configuration Example
+# Copy this to config.yaml and customize for your tests
+# API keys are loaded from .env file
+
+# Provider configurations - choose which providers to test
+providers:
+  - name: "bedrock_claude"
+    model: "anthropic.claude-3-haiku-20240307-v1:0"
+  - name: "openai"
+    model: "gpt-4o-mini"
+  - name: "gemini"
+    model: "gemini-1.5-flash"
+
+# Test execution settings
+delay_between_calls: 1      # seconds between API calls (rate limiting)
+delay_between_test_cases: 2 # seconds between test cases
+
+# Test cases - define your specific tests here
+test_cases:
+  - name: "Multi-Tool Document Analysis"
+    prompt: "You are an expert document analyst. Examine this image carefully and determine what type of document or content it contains, then choose the most appropriate analysis method. Select the analysis approach that best matches what you observe in the image."
+    image_path: "test_images/sample_document.png"
+    max_tokens: 2000
+    temperature: 0.7
+    # Multi-tool configuration - AI chooses the best analysis method
+    tools:
+      - name: "analyze_text_document"
+        description: "Use for text documents, articles, reports, and written content"
+        schema:
+          type: "object"
+          properties:
+            document_type:
+              type: "string"
+              description: "Type of text document (article, report, letter, etc.)"
+            title:
+              type: "string"
+              description: "Document title or main heading"
+            author:
+              type: "string"
+              description: "Author or source if visible"
+            language:
+              type: "string"
+              description: "Primary language of the document"
+            word_count_estimate:
+              type: "integer"
+              description: "Estimated number of words"
+            main_topics:
+              type: "array"
+              items:
+                type: "string"
+              description: "Key topics or themes discussed"
+            confidence:
+              type: "number"
+              minimum: 0.0
+              maximum: 1.0
+              description: "Analysis confidence score"
+          required: ["document_type", "title", "confidence"]
+          
+      - name: "analyze_visual_content"
+        description: "Use for images, diagrams, charts, infographics, and visual media"
+        schema:
+          type: "object"
+          properties:
+            content_type:
+              type: "string"
+              description: "Type of visual content (chart, diagram, photo, etc.)"
+            subject:
+              type: "string"
+              description: "Main subject or focus of the visual"
+            visual_elements:
+              type: "array"
+              items:
+                type: "string"
+              description: "Key visual elements present"
+            color_scheme:
+              type: "string"
+              description: "Dominant colors or color scheme"
+            style:
+              type: "string"
+              description: "Visual style (professional, artistic, technical, etc.)"
+            text_present:
+              type: "boolean"
+              description: "Whether text is visible in the image"
+            confidence:
+              type: "number"
+              minimum: 0.0
+              maximum: 1.0
+              description: "Analysis confidence score"
+          required: ["content_type", "subject", "confidence"]
+          
+      - name: "analyze_data_visualization"
+        description: "Use for charts, graphs, tables, and data presentations"
+        schema:
+          type: "object"
+          properties:
+            chart_type:
+              type: "string"
+              description: "Type of visualization (bar chart, line graph, table, etc.)"
+            data_theme:
+              type: "string"
+              description: "What the data represents or measures"
+            axes_labels:
+              type: "array"
+              items:
+                type: "string"
+              description: "Axis labels or column headers if visible"
+            key_insights:
+              type: "array"
+              items:
+                type: "string"
+              description: "Notable trends or patterns in the data"
+            time_period:
+              type: "string"
+              description: "Time period covered by the data, if applicable"
+            data_quality:
+              type: "string"
+              enum: ["Clear", "Partially Clear", "Difficult to Read", "Cannot Assess"]
+              description: "Readability of the data visualization"
+            confidence:
+              type: "number"
+              minimum: 0.0
+              maximum: 1.0
+              description: "Analysis confidence score"
+          required: ["chart_type", "data_theme", "confidence"]
+          
+      - name: "analyze_mixed_content"
+        description: "Use for complex layouts with multiple content types (presentations, magazines, mixed media)"
+        schema:
+          type: "object"
+          properties:
+            layout_type:
+              type: "string"
+              description: "Overall layout style (presentation slide, magazine page, etc.)"
+            content_sections:
+              type: "array"
+              items:
+                type: "object"
+                properties:
+                  section_type:
+                    type: "string"
+                    description: "Type of content in this section"
+                  description:
+                    type: "string"
+                    description: "Brief description of the section"
+                required: ["section_type", "description"]
+              description: "Different content sections identified"
+            primary_purpose:
+              type: "string"
+              description: "Main purpose or goal of the content"
+            target_audience:
+              type: "string"
+              description: "Apparent intended audience"
+            design_quality:
+              type: "string"
+              enum: ["Professional", "Casual", "Academic", "Creative", "Cannot Assess"]
+              description: "Overall design and presentation quality"
+            confidence:
+              type: "number"
+              minimum: 0.0
+              maximum: 1.0
+              description: "Analysis confidence score"
+          required: ["layout_type", "primary_purpose", "confidence"]
+    
+  - name: "Simple Object Detection"
+    prompt: "Identify and list all distinct objects you can see in this image with confidence scores."
+    image_path: "test_images/sample_document.png"
+    max_tokens: 1500
+    temperature: 0.3
+    # Single schema configuration - traditional structured output
+    schema:
+      type: "object"
+      properties:
+        scene_description:
+          type: "string"
+          description: "Brief description of the overall scene"
+        objects:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+                description: "Name of the detected object"
+              confidence:
+                type: "number"
+                minimum: 0.0
+                maximum: 1.0
+                description: "Confidence in detection (0-1)"
+              location:
+                type: "string"
+                description: "General location in image (e.g., 'center', 'top-left')"
+            required: ["name", "confidence"]
+        total_objects:
+          type: "integer"
+          description: "Total number of distinct objects detected"
+        analysis_method:
+          type: "string"
+          description: "Brief description of detection approach used"
+      required: ["scene_description", "objects", "total_objects"]
+      
+  - name: "Text Extraction"
+    prompt: "Extract all visible text from this image, including any partial text, labels, or writing."
+    image_path: "test_images/sample_document.png"
+    max_tokens: 1500
+    temperature: 0.1
+    schema:
+      type: "object"
+      properties:
+        extracted_text:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              text:
+                type: "string"
+                description: "The actual text found"
+              location:
+                type: "string"
+                description: "Where in the image (e.g., 'top center', 'bottom left')"
+              font_style:
+                type: "string"
+                description: "Description of text appearance"
+              confidence:
+                type: "number"
+                minimum: 0.0
+                maximum: 1.0
+                description: "Confidence in text extraction"
+            required: ["text", "location", "confidence"]
+        has_readable_text:
+          type: "boolean"
+          description: "Whether any clearly readable text was found"
+        primary_language:
+          type: "string"
+          description: "Detected primary language of text"
+        total_text_elements:
+          type: "integer"
+          description: "Number of separate text elements found"
+      required: ["extracted_text", "has_readable_text", "total_text_elements"]
