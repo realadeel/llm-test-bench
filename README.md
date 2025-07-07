@@ -29,7 +29,7 @@ An optimized benchmarking tool for comparing Large Language Model providers duri
 - **Multi-Tool Selection**: Benchmark AI's ability to choose appropriate analysis methods
 - **Vision Analysis**: Compare accuracy of image understanding across models
 - **Performance Testing**: Measure latency and reliability across providers
-- **Household Item Cataloging**: Test how well different models identify various household items
+- **Object Detection**: Test how well different models identify and categorize various objects
 - **Model Comparison**: Find optimal cost/performance balance across model variants
 
 ## 🚀 Quick Start
@@ -155,7 +155,7 @@ Process ALL images in your test directory:
 ```yaml
 test_cases:
   - name: "Batch Analysis"
-    prompt: "Analyze this household item..."
+    prompt: "Analyze this object..."
     # image_path: "specific.jpg"  # Comment out to process ALL images
     tools:
       # ... your tools

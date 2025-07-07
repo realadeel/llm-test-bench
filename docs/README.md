@@ -124,7 +124,7 @@ test_cases:
 ```yaml
 test_cases:
   - name: "Batch Analysis"
-    prompt: "Analyze this household item..."
+    prompt: "Analyze this object..."
     # image_path: commented out or removed
 ```
 
@@ -133,7 +133,7 @@ test_cases:
 ### Benefits
 
 - **Batch Processing**: Test prompts against multiple images at once
-- **Comprehensive Testing**: See how well your tools work across different item types
+- **Comprehensive Testing**: See how well your tools work across different content types
 - **Zero Configuration**: Just comment out `image_path` to enable
 - **Flexible**: Mix single-image and multi-image test cases in the same config
 
@@ -144,7 +144,7 @@ Results are organized by test case with all images grouped together:
 ```json
 {
   "name": "Batch Analysis",
-  "prompt": "Analyze this household item...",  // STORED ONCE
+  "prompt": "Analyze this object...",  // STORED ONCE
   "tools": [...],                            // STORED ONCE
   "is_multi_image": true,
   "image_results": [
@@ -199,7 +199,7 @@ providers:
 ### Example Output
 
 ```
-📝 Household Item Analysis (3 images):
+📝 Object Analysis (3 images):
   📸 album1:
     ✅ openai_gpt4_nano: 1101ms     # Fast, cheap
     ✅ openai_gpt4_mini: 1307ms     # Better quality
@@ -223,7 +223,7 @@ The most powerful feature - let the AI examine an image and choose the most appr
 
 ```yaml
 test_cases:
-  - name: "Smart Item Analysis"
+  - name: "Smart Object Analysis"
     prompt: "Examine this image carefully and choose the most appropriate analysis tool based on what you see."
     # image_path: commented out for multi-image processing
     tools:
@@ -308,7 +308,7 @@ test_cases:
 ✅ Successful Provider Calls: 15  # 3 images × 5 models
 ❌ Failed Provider Calls: 0
 
-📝 Smart Item Analysis (3 images):
+📝 Smart Object Analysis (3 images):
   📸 album1:
     ✅ openai_gpt4_nano: 1101ms
     ✅ openai_gpt4_mini: 1307ms
@@ -338,7 +338,7 @@ Results are organized by test case with maximum efficiency:
 ```json
 [
   {
-    "name": "Smart Item Analysis",
+    "name": "Smart Object Analysis",
     "prompt": "Examine this image carefully...",  // STORED ONCE
     "max_tokens": 2000,
     "temperature": 0.1,
