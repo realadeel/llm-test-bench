@@ -5,7 +5,9 @@ An optimized benchmarking tool for comparing Large Language Model providers duri
 ## ✨ Features
 
 - **Multi-Provider Support**: Compare OpenAI, AWS Bedrock (multiple models), and Google Gemini
+- **Multiple Models Per Provider**: Test different model variants (e.g., GPT-4 Nano vs Mini, Claude Haiku vs Sonnet)
 - **Vision Model Support**: Full support for Llama 4, Claude, Pixtral, GPT-4V, and Gemini vision models
+- **Multi-Image Processing**: Process ALL images in test_images/ directory when no specific image is set
 - **Flexible Input**: Test with text prompts, images, documents, or any content type
 - **Structured Output Testing**: Compare how well each provider follows your JSON schemas
 - **Multi-Tool Testing**: Let AI choose the best analysis method from multiple options
@@ -27,6 +29,8 @@ An optimized benchmarking tool for comparing Large Language Model providers duri
 - **Multi-Tool Selection**: Benchmark AI's ability to choose appropriate analysis methods
 - **Vision Analysis**: Compare accuracy of image understanding across models
 - **Performance Testing**: Measure latency and reliability across providers
+- **Household Item Cataloging**: Test how well different models identify various household items
+- **Model Comparison**: Find optimal cost/performance balance across model variants
 
 ## 🚀 Quick Start
 
@@ -58,8 +62,11 @@ cp config.yaml.example config.yaml
 
 ### 4. Add Test Content
 ```bash
-# Add your test images/documents to test_images/
-cp your_content.jpg test_images/
+# Add your test images to test_images/
+cp your_album_covers/*.jpg test_images/
+cp your_books/*.png test_images/
+
+# Or process ALL existing images by commenting out image_path in config.yaml
 ```
 
 ### 5. Run Benchmark
@@ -72,70 +79,124 @@ python llm_test_bench.py
 ```
 🎉 Test complete!
 📊 Test Cases: 1
-✅ Successful Provider Calls: 3
+🖼️ Images Processed: 3
+✅ Successful Provider Calls: 9
 ❌ Failed Provider Calls: 0
 
-📝 Production-Optimized Multi-Tool Analysis:
-  ✅ bedrock_llama_4_maverick: 1101ms
-  ✅ bedrock_llama_4_scout: 1307ms  
-  ✅ bedrock_pixtral: 9240ms
+📝 Production-Optimized Multi-Tool Analysis (3 images):
+  📸 album1:
+    ✅ openai_gpt4_nano: 1101ms
+    ✅ gemini_flash_lite: 987ms
+    ✅ bedrock_haiku_3: 1234ms
+  📸 album2:
+    ✅ openai_gpt4_nano: 987ms
+    ✅ gemini_flash_lite: 876ms
+    ✅ bedrock_haiku_3: 1098ms
+  📸 book:
+    ✅ openai_gpt4_nano: 1045ms
+    ✅ gemini_flash_lite: 934ms
+    ✅ bedrock_haiku_3: 1176ms
 
-📊 Results saved to results/test_results_20250707_015405.json
+📊 Results saved to results/test_results_2025-07-07_01-54-05.json
 ```
 
 ### Optimized JSON Structure
 
-**Efficient format eliminates prompt duplication:**
+**Efficient format with prompt and tools stored once per test case:**
 
 ```json
 [
   {
     "name": "Production-Optimized Multi-Tool Analysis",
     "prompt": "You are a professional appraiser...",  // STORED ONCE
-    "image_path": "test_images/Radioheadokcomputer.png",
     "max_tokens": 2000,
     "temperature": 0.1,
-    "provider_results": [
+    "tools": [...], // STORED ONCE
+    "is_multi_image": true,
+    "image_results": [
       {
-        "provider": "bedrock_llama_4_maverick",
-        "model": "us.meta.llama4-maverick-17b-instruct-v1:0",
-        "response": "{\"id\": \"VINYL_20250107_001\", \"title\": \"OK Computer\", ...}",
-        "latency_ms": 1101.5,
-        "timestamp": "2025-07-07T01:53:52.253486",
-        "error": null,
-        "tokens_used": 107
+        "image_path": "test_images/album1.jpg",
+        "provider_results": [
+          {
+            "provider": "openai_gpt4_nano",
+            "model": "gpt-4.1-nano-2025-04-14",
+            "response": "{...}",
+            "latency_ms": 1101.5,
+            "timestamp": "2025-07-07T01:53:52.253486",
+            "error": null,
+            "tokens_used": 107
+          }
+          // ... other providers
+        ]
       },
       {
-        "provider": "bedrock_llama_4_scout", 
-        "model": "us.meta.llama4-scout-17b-instruct-v1:0",
-        "response": "{\"id\": \"VINYL_20250707_001\", \"title\": \"OK Computer\", ...}",
-        "latency_ms": 1306.8,
-        "timestamp": "2025-07-07T01:53:54.561458",
-        "error": null,
-        "tokens_used": 109
+        "image_path": "test_images/album2.jpg",
+        "provider_results": [
+          // ... provider results for album2
+        ]
       }
-    ],
-    "tools": [...] // Tool definitions
+      // ... other images
+    ]
   }
 ]
 ```
 
 **Benefits:**
-- 💾 **Smaller files** (no prompt duplication)
-- 📁 **Better organization** (grouped by test case)
-- 🔍 **Easier analysis** (test metadata at top level)
-- ⚙️ **Same data** (fully backward compatible)
+- 💾 **Maximum efficiency** (prompt + tools stored once per test case)
+- 📁 **Perfect organization** (results grouped by test case, then by image)
+- 🔍 **Easy analysis** (compare providers across all images in one test case)
+- ⚙️ **Full compatibility** (all original data preserved)
 
 ## 🔧 Configuration
+
+### Multi-Image Processing
+Process ALL images in your test directory:
+
+```yaml
+test_cases:
+  - name: "Batch Analysis"
+    prompt: "Analyze this household item..."
+    # image_path: "specific.jpg"  # Comment out to process ALL images
+    tools:
+      # ... your tools
+```
+
+**Result**: Automatically processes every `.jpg`, `.png`, `.gif`, `.webp` file in `test_images/`
+
+### Multiple Models Per Provider
+Test different model variants from the same provider:
+
+```yaml
+providers:
+  # Multiple OpenAI models
+  - name: "openai_gpt4_nano"
+    model: "gpt-4.1-nano-2025-04-14"
+  - name: "openai_gpt4_mini"
+    model: "gpt-4.1-mini-2025-04-14"
+  
+  # Multiple Gemini models
+  - name: "gemini_flash_lite"
+    model: "gemini-2.0-flash-lite"
+  - name: "gemini_pro"
+    model: "gemini-1.5-pro"
+    
+  # Multiple Bedrock models
+  - name: "bedrock_haiku_3"
+    model: "anthropic.claude-3-haiku-20240307-v1:0"
+  - name: "bedrock_sonnet_4"
+    model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
+```
+
+**Naming Convention**: Use pattern `{provider}_{model_family}_{variant}` for clear identification in results.
 
 ### Multi-Tool Testing
 Let the AI choose the best analysis method:
 
 ```yaml
 test_cases:
-  - name: "Multi-Tool Analysis"
-    prompt: "Analyze this image and choose the appropriate tool..."
-    image_path: "test_images/album_cover.jpg"
+  - name: "Smart Item Analysis"
+    prompt: "Examine this image and choose the appropriate analysis tool."
+    image_path: "test_images/mystery_item.jpg"
     tools:
       - name: "analyze_vinyl_record"
         description: "For vinyl records and LPs"
@@ -145,8 +206,9 @@ test_cases:
             title: {type: "string"}
             artist: {type: "string"}
             genre: {type: "string"}
+            year: {type: "string"}
           required: ["title", "artist"]
-      
+          
       - name: "analyze_book"
         description: "For books and publications"
         schema:
@@ -164,7 +226,7 @@ Traditional structured output testing:
 ```yaml
 test_cases:
   - name: "Object Detection"
-    prompt: "List all objects in this image"
+    prompt: "List all objects in this image."
     image_path: "test_images/scene.jpg"
     schema:
       type: "object"
@@ -186,7 +248,7 @@ llm-test-bench/
 ├── llm_test_bench.py      # Main benchmarking engine
 ├── config.yaml           # Your test configuration
 ├── config.yaml.example   # Example configuration
-├── test_images/          # Your test images
+├── test_images/          # Your test images (auto-processed when image_path not set)
 ├── results/              # Benchmark results (optimized JSON format)
 ├── docs/                 # Documentation
 │   └── README.md          # Comprehensive documentation
@@ -195,24 +257,28 @@ llm-test-bench/
 
 ## 🎛️ Advanced Configuration
 
-### Provider Settings
+### Provider configurations
 ```yaml
 providers:
-  # Vision-capable Bedrock models
-  - name: "bedrock_llama_4_maverick"
-    model: "us.meta.llama4-maverick-17b-instruct-v1:0"
-  - name: "bedrock_llama_4_scout"
-    model: "us.meta.llama4-scout-17b-instruct-v1:0"
-  - name: "bedrock_pixtral"
-    model: "us.mistral.pixtral-large-2502-v1:0"
-  - name: "bedrock_claude"
+  # Multiple OpenAI models
+  - name: "openai_gpt4_nano"
+    model: "gpt-4.1-nano-2025-04-14"
+  - name: "openai_gpt4_mini"
+    model: "gpt-4.1-mini-2025-04-14"
+  
+  # Multiple Gemini models
+  - name: "gemini_flash_lite"
+    model: "gemini-2.0-flash-lite"
+  - name: "gemini_pro"
+    model: "gemini-1.5-pro"
+    
+  # Multiple Bedrock models
+  - name: "bedrock_haiku_3"
     model: "anthropic.claude-3-haiku-20240307-v1:0"
   - name: "bedrock_sonnet_4"
     model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
-  - name: "openai" 
-    model: "gpt-4o-mini"
-  - name: "gemini"
-    model: "gemini-1.5-flash"
+  - name: "bedrock_llama_4_maverick"
+    model: "us.meta.llama4-maverick-17b-instruct-v1:0"
 
 # Rate limiting
 delay_between_calls: 1      # seconds between API calls
@@ -224,7 +290,7 @@ delay_between_test_cases: 2 # seconds between test cases
 test_cases:
   - name: "Custom Test"
     prompt: "Your analysis prompt..."
-    image_path: "test_images/image.jpg"
+    image_path: "test_images/image.jpg"  # Or comment out for multi-image
     max_tokens: 2000
     temperature: 0.7
     # ... schema or tools

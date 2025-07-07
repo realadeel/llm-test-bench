@@ -34,14 +34,19 @@ class TestResult:
     tokens_used: Optional[int] = None
 
 @dataclass
+class ImageResult:
+    image_path: str
+    provider_results: List[TestResult]
+
+@dataclass
 class TestCaseResult:
     name: str
     prompt: str
-    image_path: Optional[str]
     max_tokens: int
     temperature: float
-    provider_results: List[TestResult]
-    tools: Optional[List[Dict]] = None
+    tools: Optional[List[Dict]]
+    image_results: List[ImageResult]  # Changed from single image to list of image results
+    is_multi_image: bool = False  # Flag to indicate if this was expanded from multi-image
 
 class LLMTestBench:
     def __init__(self, config_path: str = 'config.yaml'):
@@ -108,10 +113,59 @@ class LLMTestBench:
             '.webp': 'image/webp'
         }
         return mime_types.get(ext, 'image/jpeg')
+    
+    def _get_supported_image_files(self, directory: str = 'test_images') -> List[str]:
+        """Get all supported image files from the specified directory"""
+        supported_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+        image_files = []
+        
+        if not Path(directory).exists():
+            logger.warning(f"Directory '{directory}' does not exist")
+            return []
+        
+        for file_path in Path(directory).iterdir():
+            if file_path.is_file() and file_path.suffix.lower() in supported_extensions:
+                image_files.append(str(file_path))
+        
+        return sorted(image_files)  # Sort for consistent ordering
+    
+    def _expand_test_cases_with_images(self, test_cases: List[Dict]) -> List[Dict]:
+        """Expand test cases to include all images when image_path is not specified"""
+        expanded_test_cases = []
+        
+        for test_case in test_cases:
+            if 'image_path' in test_case and test_case['image_path']:
+                # Specific image specified, use as-is but mark as single image
+                expanded_test_case = test_case.copy()
+                expanded_test_case['is_multi_image'] = False
+                expanded_test_case['image_paths'] = [test_case['image_path']]
+                expanded_test_cases.append(expanded_test_case)
+            else:
+                # No image specified, create one test case with multiple images
+                image_files = self._get_supported_image_files()
+                
+                if not image_files:
+                    logger.warning(f"No images found in test_images directory for test case: {test_case.get('name', 'Unnamed')}")
+                    # Add the test case without image_path (will likely fail, but preserves original behavior)
+                    expanded_test_case = test_case.copy()
+                    expanded_test_case['is_multi_image'] = False
+                    expanded_test_case['image_paths'] = []
+                    expanded_test_cases.append(expanded_test_case)
+                else:
+                    logger.info(f"Expanding test case '{test_case.get('name', 'Unnamed')}' to process {len(image_files)} images")
+                    
+                    # Create one test case that will process all images
+                    expanded_test_case = test_case.copy()
+                    expanded_test_case['is_multi_image'] = True
+                    expanded_test_case['image_paths'] = image_files
+                    expanded_test_cases.append(expanded_test_case)
+        
+        return expanded_test_cases
 
     async def _call_bedrock_model(self, test_case: Dict) -> TestResult:
         """Call Bedrock API with model-specific formatting"""
         start_time = time.time()
+        response = None  # Initialize response to avoid UnboundLocalError
         
         try:
             image_b64 = self._load_image_as_base64(test_case['image_path'])
@@ -174,6 +228,12 @@ class LLMTestBench:
                         "type": "tool",
                         "name": tool_name
                     }
+                
+                # Make the API call for Claude models
+                response = self.bedrock_client.invoke_model(
+                    modelId=model_id,
+                    body=json.dumps(body)
+                )
             
             else:
                 # Non-Claude models - handle different formats
@@ -460,7 +520,11 @@ class LLMTestBench:
             )
             
         except Exception as e:
-            logger.error(f"Bedrock error for {test_case.get('model', 'unknown')}: {str(e)}")
+            logger.error(f"Bedrock error for model '{test_case.get('model', 'unknown')}' with provider '{test_case.get('provider_name', 'unknown')}':\n"
+                        f"  Error: {str(e)}\n"
+                        f"  Model ID: {test_case.get('model')}\n"
+                        f"  Provider: {test_case.get('provider_name')}\n"
+                        f"  Image: {test_case.get('image_path', 'No image')}")
             return TestResult(
                 provider=test_case.get('provider_name', 'bedrock_model'),
                 model=test_case['model'],
@@ -727,55 +791,89 @@ class LLMTestBench:
             )
     
     async def run_test_case(self, test_case: Dict) -> TestCaseResult:
-        """Run a single test case across all configured providers"""
-        provider_results = []
+        """Run a single test case across all configured providers and images"""
+        image_results = []
         
-        for provider_config in self.config['providers']:
-            provider_name = provider_config['name']
-            model = provider_config['model']
+        # Process each image in the test case
+        for image_path in test_case.get('image_paths', []):
+            provider_results = []
             
-            # Create test case with provider-specific model
-            test_case_copy = test_case.copy()
-            test_case_copy['model'] = model
-            test_case_copy['provider_name'] = provider_name
+            # Create a copy of test case for this specific image
+            image_test_case = test_case.copy()
+            image_test_case['image_path'] = image_path
             
-            if provider_name.startswith('bedrock_') and self.bedrock_client:
-                result = await self._call_bedrock_model(test_case_copy)
-            elif provider_name == 'openai' and self.openai_headers:
-                result = await self._call_openai(test_case_copy)
-            elif provider_name == 'gemini' and self.gemini_headers:
-                result = await self._call_gemini(test_case_copy)
-            else:
-                logger.warning(f"Skipping provider '{provider_name}' - no API key configured or unsupported provider")
-                continue  # Skip if no API key
+            for provider_config in self.config['providers']:
+                provider_name = provider_config['name']
+                model = provider_config['model']
+                
+                # Create test case with provider-specific model
+                provider_test_case = image_test_case.copy()
+                provider_test_case['model'] = model
+                provider_test_case['provider_name'] = provider_name
+                
+                if provider_name.startswith('bedrock_') and self.bedrock_client:
+                    result = await self._call_bedrock_model(provider_test_case)
+                elif provider_name.startswith('openai_') and self.openai_headers:
+                    result = await self._call_openai(provider_test_case)
+                elif provider_name.startswith('gemini_') and self.gemini_headers:
+                    result = await self._call_gemini(provider_test_case)
+                elif provider_name == 'openai' and self.openai_headers:  # Legacy support
+                    result = await self._call_openai(provider_test_case)
+                elif provider_name == 'gemini' and self.gemini_headers:  # Legacy support
+                    result = await self._call_gemini(provider_test_case)
+                else:
+                    # More detailed error reporting
+                    if provider_name.startswith('openai') and not self.openai_headers:
+                        logger.warning(f"Skipping provider '{provider_name}' - OPENAI_API_KEY not configured")
+                    elif provider_name.startswith('gemini') and not self.gemini_headers:
+                        logger.warning(f"Skipping provider '{provider_name}' - GEMINI_API_KEY not configured")
+                    elif provider_name.startswith('bedrock_') and not self.bedrock_client:
+                        logger.warning(f"Skipping provider '{provider_name}' - AWS credentials not configured")
+                    else:
+                        logger.warning(f"Skipping provider '{provider_name}' - unsupported provider name or missing API key")
+                    continue  # Skip if no API key
+                
+                provider_results.append(result)
+                
+                # Add delay between API calls
+                await asyncio.sleep(self.config.get('delay_between_calls', 1))
             
-            provider_results.append(result)
+            # Create ImageResult for this image
+            image_result = ImageResult(
+                image_path=image_path,
+                provider_results=provider_results
+            )
+            image_results.append(image_result)
             
-            # Add delay between API calls
-            await asyncio.sleep(self.config.get('delay_between_calls', 1))
+            # Add delay between images if processing multiple
+            if test_case.get('is_multi_image', False) and len(test_case.get('image_paths', [])) > 1:
+                await asyncio.sleep(self.config.get('delay_between_calls', 1))
         
         return TestCaseResult(
             name=test_case.get('name', 'Unnamed Test Case'),
             prompt=test_case['prompt'],
-            image_path=test_case.get('image_path'),
             max_tokens=test_case.get('max_tokens', 2000),
             temperature=test_case.get('temperature', 0.7),
-            provider_results=provider_results,
-            tools=test_case.get('tools')
+            tools=test_case.get('tools'),
+            image_results=image_results,
+            is_multi_image=test_case.get('is_multi_image', False)
         )
     
     async def run_all_tests(self) -> List[TestCaseResult]:
-        """Run all test cases"""
+        """Run all test cases (expanded to include all images when not specified)"""
+        # First, expand test cases to include all images when image_path is not specified
+        expanded_test_cases = self._expand_test_cases_with_images(self.config['test_cases'])
+        
         all_test_case_results = []
         
-        for i, test_case in enumerate(self.config['test_cases']):
-            logger.info(f"Running test case {i+1}/{len(self.config['test_cases'])}: {test_case.get('name', 'Unnamed')}")
+        for i, test_case in enumerate(expanded_test_cases):
+            logger.info(f"Running test case {i+1}/{len(expanded_test_cases)}: {test_case.get('name', 'Unnamed')}")
             
             test_case_result = await self.run_test_case(test_case)
             all_test_case_results.append(test_case_result)
             
             # Add delay between test cases
-            if i < len(self.config['test_cases']) - 1:
+            if i < len(expanded_test_cases) - 1:
                 await asyncio.sleep(self.config.get('delay_between_test_cases', 2))
         
         return all_test_case_results
@@ -794,28 +892,43 @@ async def main():
     test_bench = LLMTestBench()
     test_case_results = await test_bench.run_all_tests()
     
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     output_file = f'results/test_results_{timestamp}.json'
     test_bench.save_results(test_case_results, output_file)
     
     # Print summary
     total_provider_results = []
+    total_images_processed = 0
+    
     for test_case_result in test_case_results:
-        total_provider_results.extend(test_case_result.provider_results)
+        for image_result in test_case_result.image_results:
+            total_provider_results.extend(image_result.provider_results)
+            total_images_processed += 1
     
     successful = [r for r in total_provider_results if r.error is None]
     failed = [r for r in total_provider_results if r.error is not None]
     
     print(f"\n🎉 Test complete!")
     print(f"📊 Test Cases: {len(test_case_results)}")
+    print(f"🖼️ Images Processed: {total_images_processed}")
     print(f"✅ Successful Provider Calls: {len(successful)}")
     print(f"❌ Failed Provider Calls: {len(failed)}")
     
     for test_case_result in test_case_results:
-        print(f"\n📝 {test_case_result.name}:")
-        for result in test_case_result.provider_results:
-            status = "✅" if result.error is None else "❌"
-            print(f"  {status} {result.provider}: {result.latency_ms:.0f}ms")
+        if test_case_result.is_multi_image:
+            print(f"\n📝 {test_case_result.name} ({len(test_case_result.image_results)} images):")
+            for image_result in test_case_result.image_results:
+                image_name = Path(image_result.image_path).stem
+                print(f"  📸 {image_name}:")
+                for result in image_result.provider_results:
+                    status = "✅" if result.error is None else "❌"
+                    print(f"    {status} {result.provider}: {result.latency_ms:.0f}ms")
+        else:
+            print(f"\n📝 {test_case_result.name}:")
+            for image_result in test_case_result.image_results:
+                for result in image_result.provider_results:
+                    status = "✅" if result.error is None else "❌"
+                    print(f"  {status} {result.provider}: {result.latency_ms:.0f}ms")
 
 if __name__ == "__main__":
     asyncio.run(main())
